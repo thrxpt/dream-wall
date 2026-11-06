@@ -1,0 +1,35 @@
+{
+  "name": "dream-wall",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:setup": "node --env-file-if-exists=.env.local scripts/setup-db.mjs",
+    "test": "node --import tsx --test tests/unit.test.ts",
+    "test:integration": "node --env-file-if-exists=.env.test --import tsx --test tests/integration.test.ts",
+    "test:e2e": "node --env-file-if-exists=.env.test node_modules/@playwright/test/cli.js test"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.2.8",
+    "@fontsource/noto-sans-thai": "^5.2.9",
+    "lucide-react": "^0.577.0",
+    "next": "^16.4.5",
+    "postgres": "^3.4.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3"
+  }
+}

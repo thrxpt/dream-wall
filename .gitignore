@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env*
+!.env.example
+coverage/
+test-results/
+.impeccable/review/
+.impeccable/cache/
+.DS_Store
+*.tsbuildinfo
