@@ -19,6 +19,7 @@ export function DreamWall() {
   const [page, setPage] = useState(0);
   const [fullscreenError, setFullscreenError] = useState("");
   const paused = snapshot?.paused ?? false;
+  const pollingEnabled = snapshot?.pollingEnabled ?? true;
 
   const toggleFullscreen = useCallback(async () => {
     try {
@@ -75,7 +76,7 @@ export function DreamWall() {
       <Brand />
       <div className="header-status">
         <span className="round-tag">รอบที่ <b>{snapshot ? String(snapshot.round).padStart(2, "0") : "—"}</b></span>
-        <span className={`live-status ${error ? "offline" : ""}`}><span className="status-dot" />{loading ? "กำลังเชื่อมต่อ" : error ? "กำลังเชื่อมต่อใหม่" : "รับความฝันแบบสด"}</span>
+        <span className={`live-status ${error ? "offline" : !pollingEnabled ? "is-idle" : ""}`}><span className="status-dot" />{loading ? "กำลังเชื่อมต่อ" : error ? "กำลังเชื่อมต่อใหม่" : !pollingEnabled ? "รอเริ่มงาน" : "รับความฝันแบบสด"}</span>
       </div>
     </header>
 
@@ -85,12 +86,12 @@ export function DreamWall() {
       <div className="planet-caption"><span /> NEPTUNE <span className="caption-line" /> ดาวแห่งวิศวกรรมคอมพิวเตอร์</div>
     </section>
 
-    {error && <div className="connection-banner" role="status"><Radio size={18} aria-hidden="true" /><span>{error} · ระบบจะลองใหม่อัตโนมัติ</span></div>}
+    {error && <div className="connection-banner" role="status"><Radio size={18} aria-hidden="true" /><span>{error} · {pollingEnabled ? "ระบบจะลองใหม่อัตโนมัติ" : "รีเฟรชหน้านี้เพื่อลองอีกครั้ง"}</span></div>}
 
     <section className="dream-space" aria-label="กำแพงความฝัน">
       {loading && !snapshot ? <div className="empty-sky"><OrbitLoader /><h2>กำลังเปิดประตูสู่จักรวาล</h2><p>กำลังเชื่อมต่อกำแพงความฝัน</p></div>
       : !snapshot ? <div className="empty-sky"><Radio size={36} strokeWidth={1.2} aria-hidden="true" /><h2>ยังเชื่อมต่อกำแพงไม่ได้</h2><p>ตรวจสอบการเชื่อมต่อ ระบบจะลองใหม่ให้เอง</p></div>
-      : dreams.length === 0 ? <div className="empty-sky"><Sparkles size={36} strokeWidth={1.2} aria-hidden="true" /><h2>จักรวาลนี้กำลังรอความฝันแรก</h2><p>ส่งความฝันจาก CLI แล้วมาดูดาวของเธอที่นี่</p><span className="waiting-line"><span className="status-dot" /> พร้อมรับความฝันของทุกคน</span></div>
+      : dreams.length === 0 ? <div className="empty-sky"><Sparkles size={36} strokeWidth={1.2} aria-hidden="true" /><h2>จักรวาลนี้กำลังรอความฝันแรก</h2><p>ส่งความฝันจาก CLI แล้วมาดูดาวของเธอที่นี่</p><span className="waiting-line"><span className={`status-dot ${pollingEnabled ? "" : "idle"}`} /> {pollingEnabled ? "พร้อมรับความฝันของทุกคน" : "เตรียมออกเดินทางไปพร้อมกัน"}</span></div>
       : <>
         {active && <div className="arrival" key={active.id} role="status">
           <div className="arrival-label"><Sparkles size={18} aria-hidden="true" /> ความฝันดวงใหม่เดินทางมาถึงแล้ว</div>

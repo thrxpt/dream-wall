@@ -9,6 +9,7 @@ export function useWall(admin = false) {
   const [loading, setLoading] = useState(true);
   const sequence = useRef(0);
   const controller = useRef<AbortController | null>(null);
+  const pollingEnabled = snapshot?.pollingEnabled ?? true;
 
   const accept = useCallback((next: WallSnapshot) => {
     setSnapshot((previous) => previous && previous.revision > next.revision ? previous : next);
@@ -45,7 +46,7 @@ export function useWall(admin = false) {
       await refresh();
       if (!stopped) timer = setTimeout(poll, 2000);
     };
-    void poll();
+    if (pollingEnabled) void poll();
     const onVisible = () => {
       if (document.visibilityState === "visible") void refresh();
     };
@@ -56,7 +57,7 @@ export function useWall(admin = false) {
       controller.current?.abort();
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [refresh]);
+  }, [refresh, pollingEnabled]);
 
   return { snapshot, error, loading, refresh, accept };
 }

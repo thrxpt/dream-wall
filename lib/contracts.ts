@@ -13,6 +13,7 @@ export type WallSnapshot = {
   generation: number;
   revision: number;
   paused: boolean;
+  pollingEnabled: boolean;
   dreams: Dream[];
 };
 

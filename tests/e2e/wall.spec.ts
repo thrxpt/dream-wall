@@ -4,7 +4,68 @@ test.beforeEach(async ({ request, context }) => {
   expect((await request.post("/api/admin/session", { data: { password: "cpediwa" } })).ok()).toBe(true);
   expect((await context.request.post("/api/admin/session", { data: { password: "cpediwa" } })).ok()).toBe(true);
   const state = await (await request.get("/api/admin/dreams")).json();
+  expect((await request.patch("/api/admin/polling", { data: { round: state.round, generation: state.generation, enabled: true } })).ok()).toBe(true);
   await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
+});
+
+test("admin can stop every display's polling until the event starts", async ({ page, context, request }) => {
+  const projector = await context.newPage();
+  let adminRequests = 0;
+  let projectorRequests = 0;
+  page.on("request", req => { if (new URL(req.url()).pathname === "/api/admin/dreams") adminRequests++; });
+  projector.on("request", req => { if (new URL(req.url()).pathname === "/api/dreams" && req.method() === "GET") projectorRequests++; });
+  await page.goto("/admin");
+  await projector.goto("/");
+  await expect(page.getByRole("button", { name: "หยุดอัปเดตอัตโนมัติ", exact: true })).toBeEnabled();
+  await expect(projector.getByText("รับความฝันแบบสด", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "หยุดอัปเดตอัตโนมัติ", exact: true }).click();
+  await expect(page.getByText("หยุดอัปเดตอยู่", { exact: true })).toBeVisible();
+  await expect(projector.getByText("รอเริ่มงาน", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "พักข้อความ", exact: true })).toBeDisabled();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
+    await page.screenshot({ path: `.impeccable/review/polling-stopped-${width}.png`, fullPage: true, animations: "disabled" });
+  }
+  await page.clock.install();
+  await projector.clock.install();
+  let stoppedAdminRequests = adminRequests;
+  let stoppedProjectorRequests = projectorRequests;
+  await page.clock.fastForward(20000);
+  await projector.clock.fastForward(20000);
+  expect(adminRequests).toBe(stoppedAdminRequests);
+  expect(projectorRequests).toBe(stoppedProjectorRequests);
+
+  const message = "ความฝันก่อนเริ่มงาน";
+  expect((await request.post("/api/dreams", { data: { dream: message } })).status()).toBe(201);
+  await page.getByRole("button", { name: "เช็กข้อมูลตอนนี้", exact: true }).click();
+  await expect(page.locator(".dream-list")).toContainText(message);
+  await expect(page.getByText("หยุดอัปเดตอยู่", { exact: true })).toBeVisible();
+  stoppedAdminRequests = adminRequests;
+  await page.clock.fastForward(20000);
+  expect(adminRequests).toBe(stoppedAdminRequests);
+  await page.reload();
+  await projector.reload();
+  await expect(page.getByRole("button", { name: "เริ่มอัปเดตอัตโนมัติ", exact: true })).toBeEnabled();
+  await expect(projector.getByText("รอเริ่มงาน", { exact: true })).toBeVisible();
+  stoppedAdminRequests = adminRequests;
+  stoppedProjectorRequests = projectorRequests;
+  await page.clock.fastForward(20000);
+  await projector.clock.fastForward(20000);
+  expect(adminRequests).toBe(stoppedAdminRequests);
+  expect(projectorRequests).toBe(stoppedProjectorRequests);
+
+  await page.getByRole("button", { name: "เริ่มอัปเดตอัตโนมัติ", exact: true }).click();
+  await expect(page.getByText("อัปเดตอัตโนมัติ", { exact: true })).toBeVisible();
+  await expect(projector.getByText("รอเริ่มงาน", { exact: true })).toBeVisible();
+  await projector.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await expect(projector.getByText("รับความฝันแบบสด", { exact: true })).toBeVisible();
+  const activeAdminRequests = adminRequests;
+  const activeProjectorRequests = projectorRequests;
+  await page.clock.fastForward(3000);
+  await projector.clock.fastForward(3000);
+  await expect.poll(() => adminRequests).toBeGreaterThan(activeAdminRequests);
+  await expect.poll(() => projectorRequests).toBeGreaterThan(activeProjectorRequests);
 });
 
 test("live arrival, moderation and confirmed reset synchronize two displays", async ({ page, context, request }) => {
