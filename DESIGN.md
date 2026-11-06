@@ -163,7 +163,9 @@ The arrival panel replaces the grid for each new dream. Text is segmented into a
 
 Admin has a separate automatic-update control above playback. It stops scheduled two-second requests across all displays and persists through reloads and resets, while submissions continue to save. A manual check fetches once. Re-enabling requires each stopped projector tab to reload or become visible again; this instruction remains next to the control. Stopped displays show a muted waiting status, and playback controls are disabled until automatic updates are enabled.
 
-Arrival entrance is a gentle (700ms) upward fade with blur; the loading orbit rotates over (3s). Reduced-motion preference removes animations, transitions and smooth scrolling. The fullscreen shortcut runs only when supported.
+Grid pages share a CSS grid cell so their container reserves the tallest page's natural height at each viewport width. Inactive pages are invisible, inert and hidden from assistive technology; only the current page animates. Pagination remains below that stable container, including on shorter final pages and pages with different text lengths.
+
+Grid page changes fade the entire outgoing page out over (220ms), then fade the next page in over (500ms), both with ease-in-out. Pages do not slide or blur. Data changes cancel pending page changes, and paused/reduced-motion displays switch immediately with readable text. Featured arrivals and text parts retain their (500ms) fade; the loading orbit rotates over (3s). Reduced-motion preference removes animations, transitions and smooth scrolling. The fullscreen shortcut runs only when supported.
 
 ## Do's and Don'ts
 

@@ -87,7 +87,7 @@ test("live arrival, moderation and confirmed reset synchronize two displays", as
   await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
   await expect(other.locator(".arrival")).toHaveCount(0);
   await admin.getByRole("button", { name: `แสดงความฝัน: ${message}`, exact: true }).click();
-  await expect(page.locator(".dream-card")).toContainText(message);
+  await expect(page.locator(".dream-grid.is-current .dream-card")).toContainText(message);
 
   await request.post("/api/dreams", { data: { dream: "ข้อความในคิวรอบเก่า" } });
   await admin.getByRole("button", { name: "รีเซ็ตและเริ่มรอบใหม่" }).click();
@@ -109,7 +109,7 @@ test("desktop projector and mobile stay readable, HTML remains text, and reset t
   for (let i = 0; i < 5; i++) await request.post("/api/dreams", { data: { dream: "ความฝันของฉันคือการสร้างอนาคตที่ดีให้กับทุกคน ".repeat(6) } });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await expect(page.locator(".dream-card")).toHaveCount(6);
+  await expect(page.locator(".dream-grid.is-current .dream-card")).toHaveCount(6);
   await expect(page.locator(".dream-card img")).toHaveCount(0);
   await page.screenshot({ path: ".impeccable/review/desktop.png", fullPage: true, animations: "disabled" });
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 1440);

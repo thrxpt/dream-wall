@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Radio, Sparkles, Star } from "lucide-react";
 import { Brand } from "./brand";
 import { Sky } from "./sky";
@@ -18,6 +19,8 @@ export function DreamWall() {
   const [show, dispatch] = useReducer(showReducer, emptyShow);
   const [page, setPage] = useState(0);
   const [fullscreenError, setFullscreenError] = useState("");
+  const grid = useRef<HTMLDivElement>(null);
+  const pageFade = useRef<Animation | null>(null);
   const paused = snapshot?.paused ?? false;
   const pollingEnabled = snapshot?.pollingEnabled ?? true;
 
@@ -53,10 +56,24 @@ export function DreamWall() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [toggleFullscreen]);
 
-  useEffect(() => {
-    if (paused) return;
-    const timer = setInterval(() => setPage(p => p + 1), 12000);
-    return () => clearInterval(timer);
+  const changePage = useCallback(async (nextPage: number) => {
+    const element = grid.current;
+    const opacity = element ? getComputedStyle(element).opacity : "1";
+    pageFade.current?.cancel();
+    pageFade.current = null;
+    if (!element || paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches || !element.animate) {
+      setPage(nextPage);
+      return;
+    }
+    const fade = element.animate([{ opacity }, { opacity: 0 }], {
+      duration: 220, easing: "ease-in-out", fill: "forwards",
+    });
+    pageFade.current = fade;
+    try { await fade.finished; } catch { return; }
+    if (pageFade.current !== fade || grid.current !== element) return;
+    pageFade.current = null;
+    flushSync(() => setPage(nextPage));
+    fade.cancel();
   }, [paused]);
 
   const dreams = snapshot?.dreams ?? [];
@@ -65,10 +82,24 @@ export function DreamWall() {
     return parts.map((text, part) => ({ ...dream, text, part, parts: parts.length, number: index + 1 }));
   });
   const pages = Math.ceil(slides.length / 6);
-  const visibleDreams = slides.slice((page % Math.max(1, pages)) * 6, (page % Math.max(1, pages)) * 6 + 6);
+  const dreamPages = Array.from({ length: pages }, (_, index) => slides.slice(index * 6, index * 6 + 6));
   // Filter against the newest snapshot while the reducer catches up after reset/hide.
   const active = show.generation === snapshot?.generation && dreams.some(d => d.id === show.active?.id) ? show.active : null;
   const activeParts = active ? dreamParts(active.dream) : [];
+
+  // Data changes take precedence over a pending page change.
+  useLayoutEffect(() => {
+    pageFade.current?.cancel();
+    pageFade.current = null;
+  }, [snapshot?.revision, paused, active?.id]);
+
+  useEffect(() => () => { pageFade.current?.cancel(); }, []);
+
+  useEffect(() => {
+    if (paused || active || pages <= 1) return;
+    const timer = setTimeout(() => { void changePage(page + 1); }, 12000);
+    return () => clearTimeout(timer);
+  }, [paused, active, pages, page, changePage, snapshot?.revision]);
 
   return <main className={`wall-shell ${dreams.length ? "has-dreams" : ""} ${paused ? "is-paused" : ""}`}>
     <Sky />
@@ -99,15 +130,20 @@ export function DreamWall() {
           <p key={show.part} className={show.part > 0 ? "dream-part" : undefined}>{activeParts[show.part]}</p>
           <span className="arrival-tail">{activeParts.length > 1 ? `ส่วนที่ ${show.part + 1}/${activeParts.length} · ความฝันดวงเดียวกัน` : "อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น"} <Star size={14} aria-hidden="true" /></span>
         </div>}
-        {!active && <div className="dream-grid" key={`${snapshot.generation}-${page % Math.max(1, pages)}`}>
-          {visibleDreams.map((dream) => <article className="dream-card" key={`${dream.id}-${dream.part}`}>
-            <Star className="dream-star" size={17} strokeWidth={1.5} aria-hidden="true" />
-            <p>{dream.text}</p>
-            <span className="dream-signature">{dream.parts > 1 ? `ความฝันดวงที่ ${dream.number} · ส่วน ${dream.part + 1}/${dream.parts}` : "A DREAM BEYOND THE STARS"}<span>{String(dream.number).padStart(2, "0")}</span></span>
-          </article>)}
+        {!active && <div className="dream-pages" key={snapshot.generation}>
+          {dreamPages.map((pageDreams, index) => {
+            const current = index === page % pages;
+            return <div ref={current ? grid : undefined} className={`dream-grid${current ? " is-current" : ""}`} key={index} aria-hidden={!current} inert={!current}>
+              {pageDreams.map((dream) => <article className="dream-card" key={`${dream.id}-${dream.part}`}>
+                <Star className="dream-star" size={17} strokeWidth={1.5} aria-hidden="true" />
+                <p>{dream.text}</p>
+                <span className="dream-signature">{dream.parts > 1 ? `ความฝันดวงที่ ${dream.number} · ส่วน ${dream.part + 1}/${dream.parts}` : "A DREAM BEYOND THE STARS"}<span>{String(dream.number).padStart(2, "0")}</span></span>
+              </article>)}
+            </div>;
+          })}
         </div>}
         {!active && pages > 1 && <div className="wall-pagination" aria-label={`หน้าที่ ${page % pages + 1} จาก ${pages}`}>
-          {Array.from({ length: pages }, (_, i) => <button key={i} className={i === page % pages ? "current" : ""} aria-label={`แสดงความฝันหน้าที่ ${i + 1}`} aria-current={i === page % pages ? "page" : undefined} onClick={() => setPage(i)} />)}
+          {Array.from({ length: pages }, (_, i) => <button key={i} className={i === page % pages ? "current" : ""} aria-label={`แสดงความฝันหน้าที่ ${i + 1}`} aria-current={i === page % pages ? "page" : undefined} onClick={() => { if (i !== page % pages) void changePage(i); }} />)}
         </div>}
       </>}
     </section>

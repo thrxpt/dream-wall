@@ -72,9 +72,12 @@ svg { flex-shrink: 0; }
 .waiting-line { color: #b8d8ed; display: inline-flex; gap: 8px; align-items: center; font-size: 11px; }
 .orbit-loader { width: 36px; height: 36px; border: 1px solid #557bb8; border-radius: 50%; display: block; position: relative; margin-bottom: 20px; animation: orbit-spin 3s linear infinite; }
 .orbit-loader > span { width: 7px; height: 7px; position: absolute; left: 24px; background: var(--cyan); border-radius: 50%; }
-.dream-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.dream-pages { display: grid; }
+.dream-grid { display: grid; grid-area: 1 / 1; align-self: center; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; visibility: hidden; }
+.dream-grid.is-current { visibility: visible; animation: dream-fade 500ms ease-in-out both; }
+.is-paused .dream-grid { animation: none; }
 .dream-card { background: #0c162cf5; border: 1px solid #31476a; border-radius: 14px; padding: 20px 22px 17px; min-height: 160px; display: flex; flex-direction: column; justify-content: space-between; }
-.dream-card, .arrival, .dream-part { animation: dream-fade 500ms ease-out both; }
+.arrival, .dream-part { animation: dream-fade 500ms ease-out both; }
 .dream-star { color: #94c5ff; margin-bottom: 12px; }
 .dream-card:nth-child(3n + 2) .dream-star { color: #b7b9ff; }
 .dream-card:nth-child(3n) .dream-star { color: #8ce0e6; }
