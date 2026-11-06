@@ -10,6 +10,7 @@ INSERT INTO wall_state (id) VALUES (1) ON CONFLICT DO NOTHING;
 
 -- A round label can repeat. This monotonic token identifies each actual reset.
 ALTER TABLE wall_state ADD COLUMN IF NOT EXISTS generation integer NOT NULL DEFAULT 1 CHECK (generation > 0);
+ALTER TABLE wall_state ADD COLUMN IF NOT EXISTS paused boolean NOT NULL DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS dreams (
   id uuid PRIMARY KEY,

@@ -101,12 +101,7 @@ svg { flex-shrink: 0; }
 .dream-count > svg { color: var(--blue); }
 .dream-count b { font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .footer-motto { font-size: 10px; color: #9eb0d0; }
-.footer-controls { display: flex; align-items: center; gap: 20px; }
-.admin-link { display: inline-flex; align-items: center; gap: 4px; }
-.admin-link:hover, .back-link:hover { color: white; }
-.fullscreen-button, .playback-button { display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border-radius: 8px; background: #13213b; border: 1px solid #344565; font-size: 11px; }
-.fullscreen-button:hover, .playback-button:hover { background: #1c3155; }
-.playback-button[aria-pressed="true"] { color: var(--cyan); border-color: #6b9ca8; }
+.back-link:hover { color: white; }
 .fullscreen-error { margin: 12px 0 0; color: var(--danger); font-size: 13px; }
 .connection-banner { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; margin-top: 22px; max-width: 750px; padding: 12px 15px; font-size: 12px; line-height: 1.8; color: #f4d4b5; background: #30251b; border: 1px solid #6d5134; border-radius: 8px; }
 
@@ -124,6 +119,9 @@ svg { flex-shrink: 0; }
 .admin-title { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 25px 0 22px; }
 .admin-title h1 { margin: 0; font-size: clamp(25px, 3vw, 36px); font-weight: 600; letter-spacing: -.025em; line-height: 1.5; }
 .admin-title p { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 7px 0 0; }
+.playback-section { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+.playback-section h2 { font-size: 16px; font-weight: 550; margin: 0; }
+.playback-section p { color: var(--muted); font-size: 12px; line-height: 1.8; margin: 7px 0 0; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; font-size: 12px; padding: 11px 16px; border: 1px solid transparent; border-radius: 9px; line-height: 1.5; font-weight: 500; transition: background 160ms ease, border-color 160ms ease; white-space: nowrap; }
 .button.primary { background: var(--action); color: white; }
 .button.primary:hover { background: #467cf2; }
@@ -209,7 +207,7 @@ input::placeholder { color: #9cafce; }
   .header-status, .round-tag, .live-status { font-size: 15px; }
   .brand > span { font-size: 30px; }
   .brand small { font-size: 10px; }
-  .wall-footer, .fullscreen-button, .playback-button { font-size: 13px; }
+  .wall-footer { font-size: 13px; }
   .dream-signature { font-size: 10px; }
 }
 @media (max-width: 1000px) {
@@ -271,11 +269,7 @@ input::placeholder { color: #9cafce; }
   .dream-count { gap: 6px; }
   .dream-count b { font-size: 16px; }
   .dream-count > svg { width: 15px; }
-  .footer-controls { gap: 10px; }
-  .playback-button { font-size: 9px; min-height: 36px; padding: 8px; gap: 5px; }
-  .admin-link { font-size: 0; gap: 0; }
-  .admin-link > svg { width: 18px; height: 18px; }
-  .fullscreen-button { font-size: 0; gap: 0; min-height: 36px; padding: 9px; }
+  .playback-section { flex-direction: column; align-items: flex-start; gap: 12px; }
   .admin-header { padding: 22px; align-items: center; }
   .admin-header .button { font-size: 10px; padding: 9px 10px; min-height: 37px; }
   .admin-header-actions { flex-direction: column; gap: 6px; }

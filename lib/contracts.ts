@@ -12,6 +12,7 @@ export type WallSnapshot = {
   round: number;
   generation: number;
   revision: number;
+  paused: boolean;
   dreams: Dream[];
 };
 

@@ -10,7 +10,7 @@ export class DreamStore {
 
   async snapshot(includeHidden = false): Promise<WallSnapshot> {
     const [state] = await this.sql`
-      SELECT s.round, s.generation, s.revision,
+      SELECT s.round, s.generation, s.revision, s.paused,
         COALESCE((SELECT json_agg(json_build_object(
           'id', d.id, 'dream', d.dream, 'createdAt', d.created_at, 'hidden', d.hidden
         ) ORDER BY d.created_at ASC, d.id ASC)
@@ -46,11 +46,20 @@ export class DreamStore {
     });
   }
 
+  async setPaused(paused: boolean, round: number, generation: number) {
+    const [state] = await this.sql<{ revision: number; paused: boolean }[]>`
+      UPDATE wall_state SET paused = ${paused}, revision = revision + 1
+      WHERE id = 1 AND round = ${round} AND generation = ${generation} RETURNING revision, paused
+    `;
+    if (!state) throw new HttpError(409, "รอบเปลี่ยนแล้ว กรุณารอข้อมูลล่าสุดแล้วลองอีกครั้ง");
+    return { ok: true, ...state };
+  }
+
   async reset(round: number, generation: number, nextRound: number) {
     return this.sql.begin(async (sql) => {
-      const [state] = await sql<{ round: number; generation: number; revision: number }[]>`
-        UPDATE wall_state SET round = ${nextRound}, generation = generation + 1, revision = revision + 1
-        WHERE id = 1 AND round = ${round} AND generation = ${generation} RETURNING round, generation, revision
+      const [state] = await sql<{ round: number; generation: number; revision: number; paused: boolean }[]>`
+        UPDATE wall_state SET round = ${nextRound}, generation = generation + 1, revision = revision + 1, paused = false
+        WHERE id = 1 AND round = ${round} AND generation = ${generation} RETURNING round, generation, revision, paused
       `;
       if (!state) throw new HttpError(409, "รอบนี้ถูกรีเซ็ตแล้ว กรุณารอข้อมูลล่าสุด");
       await sql`DELETE FROM dreams`;

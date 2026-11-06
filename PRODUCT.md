@@ -22,6 +22,7 @@ Windows workshop computers; the user has already prepared CLI instructions. The 
 - Persist dreams across reloads, process restarts, and deployments.
 - Public wall and submission API; admin page and management APIs require the shared password requested by the user, checked only on the server with a signed, expiring HttpOnly session cookie.
 - Admin can hide and restore individual dreams.
+- Admin can pause/resume all projector displays through shared, persisted playback state. Public displays have no footer controls or admin link; F toggles fullscreen. Reset resumes playback for the new round.
 - Confirmed reset permanently deletes all dreams, clears the display and animation queue, and starts the next round. No historical archive.
 - Facilitators can choose the displayed round number during reset, including reusing round 1 after testing. A separate generation identifies actual round boundaries and rejects stale actions when labels repeat.
 - Authenticated facilitators can moderate and reset; logout locks management access again.

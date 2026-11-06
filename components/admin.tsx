@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Check, Eye, EyeOff, LogOut, RefreshCw, RotateCcw, Search, Star, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Eye, EyeOff, LogOut, Pause, Play, RefreshCw, RotateCcw, Search, Star, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Brand } from "./brand";
 import { useWall } from "@/lib/use-wall";
@@ -72,6 +72,26 @@ export function Admin() {
     } finally { setPending(null); }
   }
 
+  async function togglePlayback() {
+    if (!snapshot || pending) return;
+    setPending("playback");
+    setActionError("");
+    try {
+      const response = await fetch("/api/admin/playback", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paused: !snapshot.paused, round: snapshot.round, generation: snapshot.generation }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setNotice(result.paused ? "พักข้อความบนทุกจอแล้ว" : "เล่นข้อความต่อบนทุกจอแล้ว");
+      await refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "ควบคุมจอไม่สำเร็จ กรุณาลองอีกครั้ง");
+      void refresh();
+    } finally { setPending(null); }
+  }
+
   function openReset() {
     if (!snapshot) return;
     setResetContext({ round: snapshot.round, generation: snapshot.generation });
@@ -122,6 +142,8 @@ export function Admin() {
       <section className="admin-title"><div><h1>ดูแลจักรวาลความฝัน</h1><p>จัดการข้อความบนจอ และเตรียมพื้นที่สำหรับความฝันในรอบถัดไป</p></div><span className="round-tag">รอบที่ <b>{snapshot ? String(snapshot.round).padStart(2, "0") : "—"}</b></span></section>
       {(error || (actionError && resetContext === null)) && <div className="admin-error" role="alert"><span>{actionError || error}</span><button className="text-button" onClick={() => void refresh()}><RefreshCw size={15} aria-hidden="true" /> ลองใหม่</button></div>}
       {notice && <div className="admin-success" role="status"><Check size={17} aria-hidden="true" />{notice}</div>}
+
+      <section className="playback-section" aria-labelledby="playback-title"><div><h2 id="playback-title">ควบคุมจอโปรเจกเตอร์</h2><p>พักการเปลี่ยนข้อความและแอนิเมชันบนทุกจอ โดยยังรับความฝันใหม่ได้</p></div><button className="button secondary" onClick={() => void togglePlayback()} disabled={!snapshot || Boolean(error) || Boolean(pending)} aria-pressed={snapshot?.paused ?? false}>{snapshot?.paused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}{pending === "playback" ? "กำลังบันทึก…" : snapshot?.paused ? "เล่นต่อ" : "พักข้อความ"}</button></section>
 
       <section className="dream-management" aria-labelledby="dream-list-title">
         <div className="list-heading"><h2 id="dream-list-title"><Star size={21} aria-hidden="true" /> ความฝันในรอบนี้ <span>{dreams.length}</span></h2><span className="list-live"><span className={`status-dot ${error ? "disconnected" : ""}`} />{loading ? "กำลังโหลด" : error ? "ขาดการเชื่อมต่อ" : "อัปเดตอัตโนมัติ"}</span></div>

@@ -158,9 +158,9 @@ Buttons share a compact label, icon gap (8px), minimum height (42px) and transit
 
 Search is a bordered dark field. Filter navigation is an inline group with a filled selected tab and `aria-pressed`; the round capsule pairs muted text with a brighter tabular number. Dream cards preserve whitespace and wrap unbroken text. Star icons repeat the constellation language without introducing an institutional logo.
 
-The arrival panel replaces the grid for each new dream. Text is segmented into at most (64) Thai graphemes per part, with each part shown for (6500ms); normal wall pages rotate every (12000ms). Pause/resume stops both timers. Round changes and hidden messages reconcile the displayed content immediately. Empty/loading/offline states retain the sky; public connection copy promises automatic retry. Admin filters, search, hide/restore and a native reset dialog support operation; deletion requires the exact typed word `RESET`.
+The arrival panel replaces the grid for each new dream. Text is segmented into at most (64) Thai graphemes per part, with each part shown for (6500ms); normal wall pages rotate every (12000ms). Pause/resume lives in an admin playback section and stops both timers and background animations across every display through the shared polled snapshot. The state persists across reloads; reset resumes playback. The public footer retains the count and motto, with no controls or admin link; F toggles fullscreen. Round changes and hidden messages reconcile the displayed content immediately. Empty/loading/offline states retain the sky; public connection copy promises automatic retry. Admin filters, search, hide/restore and a native reset dialog support operation; deletion requires the exact typed word `RESET`.
 
-Arrival entrance is a gentle (700ms) upward fade with blur; the loading orbit rotates over (3s). Reduced-motion preference removes animations, transitions and smooth scrolling. Fullscreen is shown only when supported.
+Arrival entrance is a gentle (700ms) upward fade with blur; the loading orbit rotates over (3s). Reduced-motion preference removes animations, transitions and smooth scrolling. The fullscreen shortcut runs only when supported.
 
 ## Do's and Don'ts
 

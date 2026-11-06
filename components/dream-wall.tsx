@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useState } from "react";
-import { ArrowUpRight, Expand, Minimize, Pause, Play, Radio, Sparkles, Star } from "lucide-react";
-import Link from "next/link";
+import { Radio, Sparkles, Star } from "lucide-react";
 import { Brand } from "./brand";
 import { Sky } from "./sky";
 import { useWall } from "@/lib/use-wall";
@@ -18,10 +17,8 @@ export function DreamWall() {
   const { snapshot, error, loading } = useWall();
   const [show, dispatch] = useReducer(showReducer, emptyShow);
   const [page, setPage] = useState(0);
-  const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenError, setFullscreenError] = useState("");
-  const [canFullscreen, setCanFullscreen] = useState(false);
-  const [paused, setPaused] = useState(false);
+  const paused = snapshot?.paused ?? false;
 
   const toggleFullscreen = useCallback(async () => {
     try {
@@ -42,13 +39,6 @@ export function DreamWall() {
     const timer = setTimeout(() => dispatch("advance"), 6500);
     return () => clearTimeout(timer);
   }, [show.active, show.part, paused]);
-
-  useEffect(() => {
-    const sync = () => setFullscreen(Boolean(document.fullscreenElement));
-    setCanFullscreen(Boolean(document.fullscreenEnabled));
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -123,10 +113,6 @@ export function DreamWall() {
     <footer className="wall-footer">
       <span className="dream-count"><Star size={18} aria-hidden="true" /><b>{dreams.length}</b> ความฝันในจักรวาลนี้</span>
       <span className="footer-motto">Every dream starts somewhere. Yours starts here.</span>
-      <div className="footer-controls"><Link href="/admin" className="admin-link" aria-label="เปิดหน้าผู้ดูแล">ผู้ดูแล <ArrowUpRight size={14} aria-hidden="true" /></Link>
-        <button className="playback-button" onClick={() => setPaused(p => !p)} aria-pressed={paused}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}{paused ? "เล่นต่อ" : "พักข้อความ"}</button>
-        {canFullscreen && <button className="fullscreen-button" onClick={toggleFullscreen} aria-keyshortcuts="f" title="เข้า/ออกเต็มจอ (F)">{fullscreen ? <Minimize size={16} aria-hidden="true" /> : <Expand size={16} aria-hidden="true" />}{fullscreen ? "ออกจากเต็มจอ" : "เต็มจอ"}</button>}
-      </div>
     </footer>
     {fullscreenError && <p className="fullscreen-error" role="alert">{fullscreenError}</p>}
   </main>;

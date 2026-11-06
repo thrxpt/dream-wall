@@ -47,7 +47,7 @@ before(async () => {
   }
   throw new Error(`Test server did not start: ${serverLog}`);
 });
-beforeEach(async () => { await sql`TRUNCATE dreams`; await sql`UPDATE wall_state SET round = 1, generation = 1, revision = 0 WHERE id = 1`; });
+beforeEach(async () => { await sql`TRUNCATE dreams`; await sql`UPDATE wall_state SET round = 1, generation = 1, revision = 0, paused = false WHERE id = 1`; });
 after(async () => {
   if (server && server.exitCode === null) { const exited = once(server, "exit"); server.kill("SIGTERM"); await exited; }
   await sql.end();
@@ -159,6 +159,32 @@ test("reset accepts a chosen later round and rejects invalid targets without del
   assert.equal((await next.json()).round, 8);
 });
 
+test("playback is shared, persisted, validated and reset starts playing again", async () => {
+  for (const paused of [undefined, null, "true", 1]) {
+    assert.equal((await request("/api/admin/playback", { round: 1, generation: 1, paused }, "PATCH")).status, 400);
+  }
+  assert.equal((await request("/api/admin/playback", { round: 1, paused: true }, "PATCH")).status, 400);
+  assert.equal((await (await request("/api/dreams")).json()).revision, 0);
+  assert.equal((await request("/api/admin/playback", { round: 1, generation: 1, paused: true }, "PATCH")).status, 200);
+  await submit("ส่งได้แม้จอพักอยู่");
+  await sql.unsafe(await readFile(new URL("../db/schema.sql", import.meta.url), "utf8"));
+  for (const path of ["/api/dreams", "/api/admin/dreams"]) {
+    const snapshot = await (await request(path)).json();
+    assert.equal(snapshot.paused, true);
+    assert.equal(snapshot.revision, 2);
+    assert.equal(snapshot.dreams.length, 1);
+  }
+  assert.equal((await request("/api/admin/playback", { round: 1, generation: 1, paused: false }, "PATCH")).status, 200);
+  assert.equal((await (await request("/api/dreams")).json()).paused, false);
+  await request("/api/admin/playback", { round: 1, generation: 1, paused: true }, "PATCH");
+  const reset = await (await request("/api/admin/reset", { round: 1, generation: 1, nextRound: 1, confirm: "RESET" })).json();
+  assert.equal(reset.paused, false);
+  assert.equal((await request("/api/admin/playback", { round: 1, generation: 1, paused: true }, "PATCH")).status, 409);
+  const snapshot = await (await request("/api/dreams")).json();
+  assert.equal(snapshot.paused, false);
+  assert.equal(snapshot.revision, reset.revision);
+});
+
 test("admin page and all management APIs require a session while CLI submission stays public", async () => {
   const page = await fetch(`${base}/admin`);
   const html = await page.text();
@@ -172,6 +198,7 @@ test("admin page and all management APIs require a session while CLI submission 
     ["/api/admin/dreams", "GET", undefined],
     [`/api/admin/dreams/${id}`, "PATCH", { hidden: true, round: 1, generation: 1 }],
     ["/api/admin/reset", "POST", { round: 1, generation: 1, nextRound: 1, confirm: "RESET" }],
+    ["/api/admin/playback", "PATCH", { round: 1, generation: 1, paused: true }],
   ] as const) {
     assert.equal((await fetch(`${base}${path}`, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined })).status, 401);
   }

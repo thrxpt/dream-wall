@@ -77,10 +77,17 @@ test("desktop projector and mobile stay readable, HTML remains text, and reset t
   await expect(page.getByRole("button", { name: "รีเซ็ตและเริ่มรอบใหม่" })).toBeFocused();
 });
 
-test("maximum-length arrivals fit the projector, pause stops timers, and reset still clears paused content", async ({ page, request }) => {
+test("admin controls pause on every display, while reset and fullscreen still work without public controls", async ({ page, context, request }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto("/");
   await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
+  await expect(page.locator(".wall-footer button, .wall-footer a")).toHaveCount(0);
+  const other = await context.newPage();
+  await other.goto("/");
+  await expect(other.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
+  const admin = await context.newPage();
+  await admin.goto("/admin");
+  await expect(admin.getByRole("button", { name: "พักข้อความ", exact: true })).toBeEnabled();
   await request.post("/api/dreams", { data: { dream: "W".repeat(500) } });
   await expect(page.locator(".arrival p")).toHaveText("W".repeat(64));
   await expect(page.locator(".arrival-tail")).toContainText("ส่วนที่ 1/8");
@@ -89,19 +96,36 @@ test("maximum-length arrivals fit the projector, pause stops timers, and reset s
   await page.screenshot({ path: ".impeccable/review/arrival-max-projector.png", fullPage: true, animations: "disabled" });
 
   await page.clock.install();
-  await page.getByRole("button", { name: "พักข้อความ", exact: true }).click();
-  await expect(page.getByRole("button", { name: "เล่นต่อ", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await admin.getByRole("button", { name: "พักข้อความ", exact: true }).click();
+  await expect(admin.getByRole("button", { name: "เล่นต่อ", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("main")).toHaveClass(/is-paused/);
+  await expect(other.locator("main")).toHaveClass(/is-paused/);
+  await expect(page.locator(".neptune")).toHaveCSS("animation-play-state", "paused");
   await page.clock.fastForward(20000);
   await expect(page.locator(".arrival-tail")).toContainText("ส่วนที่ 1/8");
   await page.screenshot({ path: ".impeccable/review/paused-projector.png", fullPage: true, animations: "disabled" });
+
+  await admin.getByRole("button", { name: "เล่นต่อ", exact: true }).click();
+  await expect(page.locator("main")).not.toHaveClass(/is-paused/);
+  await expect(other.locator("main")).not.toHaveClass(/is-paused/);
+  await expect(page.locator(".neptune")).toHaveCSS("animation-play-state", "running");
+  await page.clock.fastForward(6500);
+  await expect(page.locator(".arrival-tail")).toContainText("ส่วนที่ 2/8");
+  await admin.getByRole("button", { name: "พักข้อความ", exact: true }).click();
+  await expect(page.locator("main")).toHaveClass(/is-paused/);
 
   const state = await (await request.get("/api/admin/dreams")).json();
   await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
   await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
   await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
   await expect(page.locator(".arrival")).toHaveCount(0);
-  await page.getByRole("button", { name: "เล่นต่อ", exact: true }).click();
-  await expect(page.getByRole("button", { name: "พักข้อความ", exact: true })).toBeVisible();
+  await expect(page.locator("main")).not.toHaveClass(/is-paused/);
+  await expect(other.locator("main")).not.toHaveClass(/is-paused/);
+  await expect(admin.getByRole("button", { name: "พักข้อความ", exact: true })).toBeVisible();
+  await page.keyboard.press("f");
+  await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  await page.keyboard.press("f");
+  await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false);
 });
 
 test("public outage copy stays participant-facing and recovers without a reload", async ({ page }) => {
