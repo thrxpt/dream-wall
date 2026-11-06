@@ -67,7 +67,7 @@ export function DreamWall() {
   const active = show.generation === snapshot?.generation && dreams.some(d => d.id === show.active?.id) ? show.active : null;
   const activeParts = active ? dreamParts(active.dream) : [];
 
-  return <main className={`wall-shell ${dreams.length ? "has-dreams" : ""}`}>
+  return <main className={`wall-shell ${dreams.length ? "has-dreams" : ""} ${paused ? "is-paused" : ""}`}>
     <Sky />
     <header className="wall-header">
       <Brand />
@@ -92,7 +92,7 @@ export function DreamWall() {
       : <>
         {active && <div className="arrival" key={active.id} role="status">
           <div className="arrival-label"><Sparkles size={18} aria-hidden="true" /> ความฝันดวงใหม่เดินทางมาถึงแล้ว</div>
-          <p>{activeParts[show.part]}</p>
+          <p key={show.part} className={show.part > 0 ? "dream-part" : undefined}>{activeParts[show.part]}</p>
           <span className="arrival-tail">{activeParts.length > 1 ? `ส่วนที่ ${show.part + 1}/${activeParts.length} · ความฝันดวงเดียวกัน` : "อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น"} <Star size={14} aria-hidden="true" /></span>
         </div>}
         {!active && <div className="dream-grid" key={`${snapshot.generation}-${page % Math.max(1, pages)}`}>
