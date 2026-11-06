@@ -1,4 +1,4 @@
-import { MAX_DREAM_LENGTH } from "./contracts";
+import { MAX_DREAM_LENGTH, MAX_ROUND } from "./contracts";
 import { HttpError } from "./errors";
 
 const headers = { "Cache-Control": "no-store, max-age=0" };
@@ -60,9 +60,10 @@ export function parseDream(body: Record<string, unknown>) {
   return dream;
 }
 
-export function parseRound(body: Record<string, unknown>) {
-  if (typeof body.round !== "number" || !Number.isSafeInteger(body.round) || body.round < 1) {
-    throw new HttpError(400, "กรุณาระบุ round เป็นเลขรอบปัจจุบัน");
+export function parseRound(body: Record<string, unknown>, field: "round" | "nextRound" | "generation" = "round") {
+  const value = body[field];
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > MAX_ROUND) {
+    throw new HttpError(400, `กรุณาระบุ ${field} เป็นจำนวนเต็มตั้งแต่ 1 ถึง ${MAX_ROUND}`);
   }
-  return body.round;
+  return value;
 }

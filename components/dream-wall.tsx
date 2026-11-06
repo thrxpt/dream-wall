@@ -64,7 +64,7 @@ export function DreamWall() {
   const pages = Math.ceil(slides.length / 6);
   const visibleDreams = slides.slice((page % Math.max(1, pages)) * 6, (page % Math.max(1, pages)) * 6 + 6);
   // Filter against the newest snapshot while the reducer catches up after reset/hide.
-  const active = show.round === snapshot?.round && dreams.some(d => d.id === show.active?.id) ? show.active : null;
+  const active = show.generation === snapshot?.generation && dreams.some(d => d.id === show.active?.id) ? show.active : null;
   const activeParts = active ? dreamParts(active.dream) : [];
 
   return <main className={`wall-shell ${dreams.length ? "has-dreams" : ""}`}>
@@ -95,7 +95,7 @@ export function DreamWall() {
           <p>{activeParts[show.part]}</p>
           <span className="arrival-tail">{activeParts.length > 1 ? `ส่วนที่ ${show.part + 1}/${activeParts.length} · ความฝันดวงเดียวกัน` : "อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น"} <Star size={14} aria-hidden="true" /></span>
         </div>}
-        {!active && <div className="dream-grid" key={`${snapshot.round}-${page % Math.max(1, pages)}`}>
+        {!active && <div className="dream-grid" key={`${snapshot.generation}-${page % Math.max(1, pages)}`}>
           {visibleDreams.map((dream) => <article className="dream-card" key={`${dream.id}-${dream.part}`}>
             <Star className="dream-star" size={17} strokeWidth={1.5} aria-hidden="true" />
             <p>{dream.text}</p>

@@ -2,21 +2,41 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Check, Eye, EyeOff, RefreshCw, RotateCcw, Search, Star, TriangleAlert, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Eye, EyeOff, LogOut, RefreshCw, RotateCcw, Search, Star, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Brand } from "./brand";
 import { useWall } from "@/lib/use-wall";
 import type { Dream, WallSnapshot } from "@/lib/contracts";
+import { MAX_ROUND } from "@/lib/contracts";
 
 export function Admin() {
+  const router = useRouter();
   const { snapshot, error, loading, refresh, accept } = useWall(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [pending, setPending] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState("");
-  const [resetRound, setResetRound] = useState<number | null>(null);
+  const [resetContext, setResetContext] = useState<Pick<WallSnapshot, "round" | "generation"> | null>(null);
+  const [nextRound, setNextRound] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
+
+  async function logout() {
+    if (pending) return;
+    setPending("logout");
+    setActionError("");
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "DELETE", headers: { "Content-Type": "application/json" }, body: "{}",
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!response.ok) throw new Error("ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง");
+      router.refresh();
+    } catch {
+      setActionError("ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง");
+    } finally { setPending(null); }
+  }
 
   useEffect(() => {
     if (!notice) return;
@@ -25,12 +45,12 @@ export function Admin() {
   }, [notice]);
 
   useEffect(() => {
-    if (resetRound !== null && snapshot && resetRound !== snapshot.round) {
+    if (resetContext && snapshot && resetContext.generation !== snapshot.generation) {
       dialog.current?.close();
-      setResetRound(null);
+      setResetContext(null);
       setConfirmation("");
     }
-  }, [resetRound, snapshot]);
+  }, [resetContext, snapshot]);
 
   async function moderate(dream: Dream) {
     if (!snapshot || pending) return;
@@ -39,7 +59,7 @@ export function Admin() {
     try {
       const response = await fetch(`/api/admin/dreams/${dream.id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hidden: !dream.hidden, round: snapshot.round }),
+        body: JSON.stringify({ hidden: !dream.hidden, round: snapshot.round, generation: snapshot.generation }),
         signal: AbortSignal.timeout(15000),
       });
       const result = await response.json();
@@ -54,7 +74,8 @@ export function Admin() {
 
   function openReset() {
     if (!snapshot) return;
-    setResetRound(snapshot.round);
+    setResetContext({ round: snapshot.round, generation: snapshot.generation });
+    setNextRound(String(Math.min(snapshot.round + 1, MAX_ROUND)));
     setConfirmation("");
     setActionError("");
     dialog.current?.showModal();
@@ -63,24 +84,25 @@ export function Admin() {
   function closeReset() {
     if (pending === "reset") return;
     dialog.current?.close();
-    setResetRound(null);
+    setResetContext(null);
   }
 
   async function reset() {
-    if (resetRound === null || confirmation !== "RESET" || pending) return;
+    const target = Number(nextRound);
+    if (!resetContext || confirmation !== "RESET" || pending || !Number.isInteger(target) || target < 1 || target > MAX_ROUND) return;
     setPending("reset");
     setActionError("");
     try {
       const response = await fetch("/api/admin/reset", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ round: resetRound, confirm: confirmation }),
+        body: JSON.stringify({ ...resetContext, nextRound: target, confirm: confirmation }),
         signal: AbortSignal.timeout(15000),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
       accept(result as WallSnapshot);
       dialog.current?.close();
-      setResetRound(null);
+      setResetContext(null);
       setConfirmation("");
       setNotice(`เริ่มรอบที่ ${result.round} แล้ว พร้อมรับความฝันใหม่`);
     } catch (error) {
@@ -94,12 +116,11 @@ export function Admin() {
   const filtered = dreams.filter(d => (filter === "all" || (filter === "hidden" ? d.hidden : !d.hidden)) && d.dream.toLocaleLowerCase().includes(search.toLocaleLowerCase())).toReversed();
 
   return <main className="admin-shell">
-    <header className="admin-header"><Link href="/" aria-label="กลับไปกำแพงความฝัน"><Brand /></Link><Link className="button secondary" href="/" target="_blank" rel="noopener noreferrer">เปิดจอโปรเจกเตอร์ <ArrowUpRight size={17} aria-hidden="true" /></Link></header>
+    <header className="admin-header"><Link href="/" aria-label="กลับไปกำแพงความฝัน"><Brand /></Link><div className="admin-header-actions"><Link className="button secondary" href="/" target="_blank" rel="noopener noreferrer">เปิดจอโปรเจกเตอร์ <ArrowUpRight size={17} aria-hidden="true" /></Link><button className="button quiet" onClick={() => void logout()} disabled={Boolean(pending)}><LogOut size={17} aria-hidden="true" />{pending === "logout" ? "กำลังออกจากระบบ…" : "ออกจากระบบ"}</button></div></header>
     <div className="admin-content">
       <Link className="back-link" href="/"><ArrowLeft size={16} aria-hidden="true" /> กลับไปกำแพงความฝัน</Link>
       <section className="admin-title"><div><h1>ดูแลจักรวาลความฝัน</h1><p>จัดการข้อความบนจอ และเตรียมพื้นที่สำหรับความฝันในรอบถัดไป</p></div><span className="round-tag">รอบที่ <b>{snapshot ? String(snapshot.round).padStart(2, "0") : "—"}</b></span></section>
-      <div className="admin-open-notice"><TriangleAlert size={17} aria-hidden="true" /><p>หน้านี้ไม่มีรหัสผ่าน ทุกคนที่เข้าถึง URL นี้สามารถซ่อนข้อความและรีเซ็ตได้</p></div>
-      {(error || (actionError && resetRound === null)) && <div className="admin-error" role="alert"><span>{actionError || error}</span><button className="text-button" onClick={() => void refresh()}><RefreshCw size={15} aria-hidden="true" /> ลองใหม่</button></div>}
+      {(error || (actionError && resetContext === null)) && <div className="admin-error" role="alert"><span>{actionError || error}</span><button className="text-button" onClick={() => void refresh()}><RefreshCw size={15} aria-hidden="true" /> ลองใหม่</button></div>}
       {notice && <div className="admin-success" role="status"><Check size={17} aria-hidden="true" />{notice}</div>}
 
       <section className="dream-management" aria-labelledby="dream-list-title">
@@ -114,11 +135,12 @@ export function Admin() {
       <footer className="admin-footer">Beyond the Star. Dream Begin. <span>COMPUTER ENGINEERING · NEPTUNE</span></footer>
     </div>
 
-    <dialog ref={dialog} className="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-description" onCancel={e => { if (pending === "reset") e.preventDefault(); else setResetRound(null); }} onClose={() => { setResetRound(null); setConfirmation(""); }}>
+    <dialog ref={dialog} className="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-description" onCancel={e => { if (pending === "reset") e.preventDefault(); else setResetContext(null); }} onClose={() => { setResetContext(null); setConfirmation(""); }}>
       <button className="dialog-close icon-button" onClick={closeReset} disabled={pending === "reset"} aria-label="ปิดหน้าต่างยืนยัน"><X size={21} aria-hidden="true" /></button>
       <span className="reset-icon"><RotateCcw size={26} aria-hidden="true" /></span><h2 id="reset-title">เริ่มจักรวาลรอบใหม่?</h2>
-      <p id="reset-description">ความฝันทั้งหมดในรอบที่ {resetRound} จะถูกลบถาวร รวมถึงข้อความที่ซ่อน จอโปรเจกเตอร์จะว่างและเริ่มรอบถัดไปทันที</p>
+      <p id="reset-description">ความฝันทั้งหมดในรอบที่ {resetContext?.round} จะถูกลบถาวร รวมถึงข้อความที่ซ่อน จอโปรเจกเตอร์จะว่างและเริ่มตามเลขรอบที่คุณกำหนด</p>
       <form onSubmit={e => { e.preventDefault(); void reset(); }}>
+        <div className="reset-round-field"><label htmlFor="reset-next-round">เริ่มที่รอบ</label><input id="reset-next-round" type="number" inputMode="numeric" min={1} max={MAX_ROUND} step={1} required value={nextRound} disabled={pending === "reset"} onChange={e => setNextRound(e.target.value)} aria-describedby="reset-round-hint" /><p id="reset-round-hint">ตั้งเป็น 1 เพื่อเริ่มงานหลังทดสอบ หรือเลือกเลขรอบที่ต้องการ</p></div>
         <label htmlFor="reset-confirm">พิมพ์ <strong>RESET</strong> เพื่อยืนยันการลบ</label><input id="reset-confirm" autoComplete="off" autoFocus value={confirmation} disabled={pending === "reset"} onChange={e => setConfirmation(e.target.value)} placeholder="RESET" />
         {actionError && <p className="dialog-error" role="alert">{actionError}</p>}
         <div className="dialog-actions"><button className="button secondary" type="button" onClick={closeReset} disabled={pending === "reset"}>ยกเลิก</button><button className="button danger" type="submit" disabled={confirmation !== "RESET" || Boolean(pending)}>{pending === "reset" ? "กำลังเริ่มรอบใหม่…" : "ลบทั้งหมดและเริ่มรอบใหม่"}</button></div>

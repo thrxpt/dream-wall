@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test.beforeEach(async ({ request }) => {
+test.beforeEach(async ({ request, context }) => {
+  expect((await request.post("/api/admin/session", { data: { password: "cpediwa" } })).ok()).toBe(true);
+  expect((await context.request.post("/api/admin/session", { data: { password: "cpediwa" } })).ok()).toBe(true);
   const state = await (await request.get("/api/admin/dreams")).json();
-  await request.post("/api/admin/reset", { data: { round: state.round, confirm: "RESET" } });
+  await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
 });
 
 test("live arrival, moderation and confirmed reset synchronize two displays", async ({ page, context, request }) => {
@@ -94,7 +96,7 @@ test("maximum-length arrivals fit the projector, pause stops timers, and reset s
   await page.screenshot({ path: ".impeccable/review/paused-projector.png", fullPage: true, animations: "disabled" });
 
   const state = await (await request.get("/api/admin/dreams")).json();
-  await request.post("/api/admin/reset", { data: { round: state.round, confirm: "RESET" } });
+  await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
   await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
   await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
   await expect(page.locator(".arrival")).toHaveCount(0);
@@ -117,4 +119,64 @@ test("public outage copy stays participant-facing and recovers without a reload"
   await page.unroute("**/api/dreams");
   await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
   await expect(page.locator(".connection-banner")).toHaveCount(0);
+});
+
+test("reset can restart at round 1, including consecutive uses of the same number", async ({ page, context, request }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
+  const admin = await context.newPage();
+  await admin.goto("/admin");
+  await expect(admin.locator(".round-tag b")).not.toHaveText("—");
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await request.post("/api/dreams", { data: { dream: `ทดสอบก่อนล้าง ${attempt}` } });
+    await expect(page.locator(".arrival")).toContainText(`ทดสอบก่อนล้าง ${attempt}`);
+    const before = await (await request.get("/api/admin/dreams")).json();
+    await admin.getByRole("button", { name: "รีเซ็ตและเริ่มรอบใหม่" }).click();
+    const target = admin.getByLabel("เริ่มที่รอบ", { exact: true });
+    await expect(target).toHaveValue(String(before.round + 1));
+    await target.fill("1");
+    await admin.getByLabel("พิมพ์ RESET เพื่อยืนยันการลบ").fill("RESET");
+    if (attempt === 0) {
+      await admin.setViewportSize({ width: 1440, height: 900 });
+      await admin.evaluate(() => window.scrollTo(0, 0));
+      await admin.screenshot({ path: ".impeccable/review/reset-round-desktop.png", animations: "disabled" });
+      await admin.setViewportSize({ width: 390, height: 844 });
+      await admin.screenshot({ path: ".impeccable/review/reset-round-mobile.png", animations: "disabled" });
+      await expect(admin.locator("body")).toHaveJSProperty("scrollWidth", 390);
+    }
+    await admin.getByRole("button", { name: "ลบทั้งหมดและเริ่มรอบใหม่", exact: true }).click();
+    await expect(admin.getByRole("dialog")).not.toBeVisible();
+    await expect(admin.locator(".round-tag b")).toHaveText("01");
+    await expect(page.locator(".round-tag b")).toHaveText("01");
+    await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();
+    await expect(page.locator(".arrival")).toHaveCount(0);
+  }
+  await request.post("/api/dreams", { data: { dream: "ความฝันจริงของรอบที่ 1" } });
+  await expect(page.locator(".arrival")).toContainText("ความฝันจริงของรอบที่ 1");
+});
+
+test("password gate rejects mistakes, remembers login after reload, and logout locks admin again", async ({ page, context }) => {
+  await context.clearCookies();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "เข้าสู่หน้าผู้ดูแล" })).toBeVisible();
+  expect((await context.request.get("/api/admin/dreams")).status()).toBe(401);
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill("incorrect");
+  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
+  await expect(page.locator(".login-panel").getByRole("alert")).toContainText("รหัสผ่านไม่ถูกต้อง");
+  await page.screenshot({ path: ".impeccable/review/admin-login-desktop.png", fullPage: true, animations: "disabled" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: ".impeccable/review/admin-login-mobile.png", fullPage: true, animations: "disabled" });
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 390);
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill("cpediwa");
+  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "ดูแลจักรวาลความฝัน" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "ดูแลจักรวาลความฝัน" })).toBeVisible();
+  await page.getByRole("button", { name: "ออกจากระบบ", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "เข้าสู่หน้าผู้ดูแล" })).toBeVisible();
+  expect((await context.request.get("/api/admin/dreams")).status()).toBe(401);
+  expect((await context.request.get("/api/dreams")).status()).toBe(200);
 });

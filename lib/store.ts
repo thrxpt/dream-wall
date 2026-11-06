@@ -10,7 +10,7 @@ export class DreamStore {
 
   async snapshot(includeHidden = false): Promise<WallSnapshot> {
     const [state] = await this.sql`
-      SELECT s.round, s.revision,
+      SELECT s.round, s.generation, s.revision,
         COALESCE((SELECT json_agg(json_build_object(
           'id', d.id, 'dream', d.dream, 'createdAt', d.created_at, 'hidden', d.hidden
         ) ORDER BY d.created_at ASC, d.id ASC)
@@ -33,11 +33,11 @@ export class DreamStore {
     });
   }
 
-  async moderate(id: string, hidden: boolean, round: number) {
+  async moderate(id: string, hidden: boolean, round: number, generation: number) {
     return this.sql.begin(async (sql) => {
       const [state] = await sql<{ revision: number }[]>`
         UPDATE wall_state SET revision = revision + 1
-        WHERE id = 1 AND round = ${round} RETURNING revision
+        WHERE id = 1 AND round = ${round} AND generation = ${generation} RETURNING revision
       `;
       if (!state) throw new HttpError(409, "รอบเปลี่ยนแล้ว กรุณารอข้อมูลล่าสุดแล้วลองอีกครั้ง");
       const [entry] = await sql`UPDATE dreams SET hidden = ${hidden} WHERE id = ${id} RETURNING id`;
@@ -46,11 +46,11 @@ export class DreamStore {
     });
   }
 
-  async reset(round: number) {
+  async reset(round: number, generation: number, nextRound: number) {
     return this.sql.begin(async (sql) => {
-      const [state] = await sql<{ round: number; revision: number }[]>`
-        UPDATE wall_state SET round = round + 1, revision = revision + 1
-        WHERE id = 1 AND round = ${round} RETURNING round, revision
+      const [state] = await sql<{ round: number; generation: number; revision: number }[]>`
+        UPDATE wall_state SET round = ${nextRound}, generation = generation + 1, revision = revision + 1
+        WHERE id = 1 AND round = ${round} AND generation = ${generation} RETURNING round, generation, revision
       `;
       if (!state) throw new HttpError(409, "รอบนี้ถูกรีเซ็ตแล้ว กรุณารอข้อมูลล่าสุด");
       await sql`DELETE FROM dreams`;

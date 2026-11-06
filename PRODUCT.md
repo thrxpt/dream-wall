@@ -20,10 +20,11 @@ Windows workshop computers; the user has already prepared CLI instructions. The 
 ## Capabilities and Constraints
 - Anonymous dreams appear immediately, with a brief featured moment, then join a rotating wall.
 - Persist dreams across reloads, process restarts, and deployments.
-- Public wall and API; admin page intentionally has no login or password, as explicitly requested.
+- Public wall and submission API; admin page and management APIs require the shared password requested by the user, checked only on the server with a signed, expiring HttpOnly session cookie.
 - Admin can hide and restore individual dreams.
 - Confirmed reset permanently deletes all dreams, clears the display and animation queue, and starts the next round. No historical archive.
-- Users with access to the admin URL can moderate and reset; this is an accepted product decision.
+- Facilitators can choose the displayed round number during reset, including reusing round 1 after testing. A separate generation identifies actual round boundaries and rejects stale actions when labels repeat.
+- Authenticated facilitators can moderate and reset; logout locks management access again.
 - Do not add CLI teaching material or a public submission form.
 
 ## Brand Commitments

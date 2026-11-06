@@ -1,4 +1,5 @@
 export const MAX_DREAM_LENGTH = 500;
+export const MAX_ROUND = 2_147_483_647;
 
 export type Dream = {
   id: string;
@@ -9,6 +10,7 @@ export type Dream = {
 
 export type WallSnapshot = {
   round: number;
+  generation: number;
   revision: number;
   dreams: Dream[];
 };
