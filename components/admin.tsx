@@ -177,7 +177,7 @@ export function Admin() {
       </section>
 
       <section className="reset-section"><div><h2><RotateCcw size={20} aria-hidden="true" /> พร้อมสำหรับรอบถัดไป?</h2><p>ล้างความฝันทั้งหมด รวมถึงข้อความที่ซ่อน แล้วเริ่มรอบใหม่บนทุกจอ</p></div><button className="button danger-outline" onClick={openReset} disabled={!snapshot || Boolean(error) || Boolean(pending)}><RotateCcw size={17} aria-hidden="true" /> รีเซ็ตและเริ่มรอบใหม่</button></section>
-      <footer className="admin-footer">Beyond the Star. Dream Begin. <span>COMPUTER ENGINEERING · NEPTUNE</span></footer>
+      <footer className="admin-footer">Beyond the Star. Dream Begin. <span>COMPUTER ENGINEERING · OPERATION NEPTUNE</span></footer>
     </div>
 
     <dialog ref={dialog} className="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-description" onCancel={e => { if (pending === "reset") e.preventDefault(); else setResetContext(null); }} onClose={() => { setResetContext(null); setConfirmation(""); }}>
