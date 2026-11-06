@@ -17,7 +17,7 @@ test("admin can stop every display's polling until the event starts", async ({ p
   await page.goto("/admin");
   await projector.goto("/");
   await expect(page.getByRole("button", { name: "หยุดอัปเดตอัตโนมัติ", exact: true })).toBeEnabled();
-  await expect(projector.getByText("รับความฝันแบบสด", { exact: true })).toBeVisible();
+  await expect(projector.locator(".live-status")).toHaveCount(0);
   await page.getByRole("button", { name: "หยุดอัปเดตอัตโนมัติ", exact: true }).click();
   await expect(page.getByText("หยุดอัปเดตอยู่", { exact: true })).toBeVisible();
   await expect(projector.getByText("รอเริ่มงาน", { exact: true })).toBeVisible();
@@ -59,7 +59,7 @@ test("admin can stop every display's polling until the event starts", async ({ p
   await expect(page.getByText("อัปเดตอัตโนมัติ", { exact: true })).toBeVisible();
   await expect(projector.getByText("รอเริ่มงาน", { exact: true })).toBeVisible();
   await projector.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
-  await expect(projector.getByText("รับความฝันแบบสด", { exact: true })).toBeVisible();
+  await expect(projector.locator(".live-status")).toHaveCount(0);
   const activeAdminRequests = adminRequests;
   const activeProjectorRequests = projectorRequests;
   await page.clock.fastForward(3000);

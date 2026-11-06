@@ -76,7 +76,7 @@ export function DreamWall() {
       <Brand />
       <div className="header-status">
         <span className="round-tag">รอบที่ <b>{snapshot ? String(snapshot.round).padStart(2, "0") : "—"}</b></span>
-        <span className={`live-status ${error ? "offline" : !pollingEnabled ? "is-idle" : ""}`}><span className="status-dot" />{loading ? "กำลังเชื่อมต่อ" : error ? "กำลังเชื่อมต่อใหม่" : !pollingEnabled ? "รอเริ่มงาน" : "รับความฝันแบบสด"}</span>
+        {(loading || error || !pollingEnabled) && <span className={`live-status ${error ? "offline" : !pollingEnabled ? "is-idle" : ""}`}><span className="status-dot" />{loading ? "กำลังเชื่อมต่อ" : error ? "กำลังเชื่อมต่อใหม่" : "รอเริ่มงาน"}</span>}
       </div>
     </header>
 
