@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { ArrowUpRight, Expand, Minimize, Pause, Play, Radio, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import { Brand } from "./brand";
@@ -23,6 +23,16 @@ export function DreamWall() {
   const [canFullscreen, setCanFullscreen] = useState(false);
   const [paused, setPaused] = useState(false);
 
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+      setFullscreenError("");
+    } catch {
+      setFullscreenError("เปิดเต็มจอไม่สำเร็จ ลองใช้ปุ่ม F11 ของเบราว์เซอร์");
+    }
+  }, []);
+
   useEffect(() => {
     if (snapshot) dispatch({ snapshot, paused });
   }, [snapshot, paused]);
@@ -41,20 +51,22 @@ export function DreamWall() {
   }, []);
 
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!document.fullscreenEnabled || event.key.toLowerCase() !== "f" || event.repeat || event.defaultPrevented || event.isComposing || event.ctrlKey || event.altKey || event.metaKey) return;
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.isContentEditable || target.closest("input, textarea, select, [role='textbox']"))) return;
+      event.preventDefault();
+      void toggleFullscreen();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [toggleFullscreen]);
+
+  useEffect(() => {
     if (paused) return;
     const timer = setInterval(() => setPage(p => p + 1), 12000);
     return () => clearInterval(timer);
   }, [paused]);
-
-  async function toggleFullscreen() {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await document.documentElement.requestFullscreen();
-      setFullscreenError("");
-    } catch {
-      setFullscreenError("เปิดเต็มจอไม่สำเร็จ ลองใช้ปุ่ม F11 ของเบราว์เซอร์");
-    }
-  }
 
   const dreams = snapshot?.dreams ?? [];
   const slides = dreams.flatMap((dream, index) => {
@@ -113,7 +125,7 @@ export function DreamWall() {
       <span className="footer-motto">Every dream starts somewhere. Yours starts here.</span>
       <div className="footer-controls"><Link href="/admin" className="admin-link" aria-label="เปิดหน้าผู้ดูแล">ผู้ดูแล <ArrowUpRight size={14} aria-hidden="true" /></Link>
         <button className="playback-button" onClick={() => setPaused(p => !p)} aria-pressed={paused}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}{paused ? "เล่นต่อ" : "พักข้อความ"}</button>
-        {canFullscreen && <button className="fullscreen-button" onClick={toggleFullscreen}>{fullscreen ? <Minimize size={16} aria-hidden="true" /> : <Expand size={16} aria-hidden="true" />}{fullscreen ? "ออกจากเต็มจอ" : "เต็มจอ"}</button>}
+        {canFullscreen && <button className="fullscreen-button" onClick={toggleFullscreen} aria-keyshortcuts="f" title="เข้า/ออกเต็มจอ (F)">{fullscreen ? <Minimize size={16} aria-hidden="true" /> : <Expand size={16} aria-hidden="true" />}{fullscreen ? "ออกจากเต็มจอ" : "เต็มจอ"}</button>}
       </div>
     </footer>
     {fullscreenError && <p className="fullscreen-error" role="alert">{fullscreenError}</p>}
