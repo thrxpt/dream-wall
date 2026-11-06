@@ -32,6 +32,8 @@ Windows workshop computers; the user has already prepared CLI instructions. The 
 ## Brand Commitments
 Exact supplied event theme: “Beyond the Star. Dream Begin.” Space setting, Neptune represents the computer engineering department. Dark blue and cyan, large readable Thai type, gentle celebratory motion.
 
+“Operation Neptune” is the department identity; “Terminal of Despina” is the CLI workshop name. Keep these roles distinct from the Dream Wall feature name and the event theme.
+
 ## Evidence on Hand
 No official institutional logo or participant content supplied. Never invent either. Empty state must be honest; demonstration dreams are confined to tests.
 

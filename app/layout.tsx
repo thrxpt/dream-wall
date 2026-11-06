@@ -7,7 +7,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Dream Wall · Beyond the Star. Dream Begin.",
-  description: "ให้ความฝันออกเดินทางสู่ดาวเนปจูน · กำแพงความฝันจาก workshop CLI วิศวกรรมคอมพิวเตอร์",
+  description: "กำแพงความฝันจาก Terminal of Despina · workshop CLI ของ Operation Neptune ภาควิชาวิศวกรรมคอมพิวเตอร์",
   robots: { index: false, follow: false },
 };
 

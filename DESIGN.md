@@ -118,6 +118,7 @@ An anonymous dream becomes a star in a shared Neptune sky. Deep blue space, real
 The public wall is a spacious projector experience; administration is a denser operating surface. Opaque message panels keep the sky behind the reading plane. CSS in app/globals.css remains the implementation authority.
 
 **Key Characteristics:**
+- Department identity: “COMPUTER ENGINEERING · OPERATION NEPTUNE” beneath the Dream Wall wordmark. The Thai invitation “ให้ความฝันของเธอ ออกเดินทางไกลกว่าดวงดาว” sits beneath the event heading, followed by “Terminal of Despina · CLI Workshop” in smaller muted text. Both remain visible when dreams are displayed.
 - Midnight blue with cyan and electric blue accents.
 - Thai-first message readability with compact Manrope controls.
 - A single featured arrival, then a rotating shared wall.

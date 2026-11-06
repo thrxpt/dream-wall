@@ -46,7 +46,7 @@ svg { flex-shrink: 0; }
 .brand > svg { color: var(--blue); }
 .brand > span { font-size: 25px; font-weight: 750; letter-spacing: -.035em; line-height: 1.05; }
 .brand-light { font-weight: 400; }
-.brand small { display: block; font-size: 8px; letter-spacing: .12em; font-weight: 550; margin-top: 7px; color: var(--muted); }
+.brand small { display: block; font-size: 10px; letter-spacing: .04em; font-weight: 550; margin-top: 7px; color: var(--muted); }
 .header-status { display: flex; align-items: center; gap: 22px; font-size: 12px; }
 .round-tag { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); border: 1px solid #819dcd38; padding: 8px 15px; border-radius: 30px; font-size: 12px; white-space: nowrap; }
 .round-tag b { color: var(--ink); font-size: 15px; font-variant-numeric: tabular-nums; }
@@ -59,7 +59,8 @@ svg { flex-shrink: 0; }
 .wall-intro { padding-top: clamp(42px, 7vh, 86px); position: relative; z-index: 1; }
 .wall-intro h1 { font-size: clamp(45px, 5.9vw, 90px); line-height: 1.08; letter-spacing: -.04em; font-weight: 650; margin: 0; max-width: 900px; text-wrap: balance; }
 .wall-intro h1 > span { color: var(--blue); }
-.wall-intro > p { color: #cad7ef; font-size: clamp(16px, 1.55vw, 23px); line-height: 1.8; margin: 22px 0 0; }
+.wall-tagline { color: #cad7ef; font-size: clamp(16px, 1.55vw, 23px); line-height: 1.8; margin: 22px 0 0; }
+.workshop-name { color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1.7; margin: 8px 0 0; }
 .planet-caption { display: flex; gap: 9px; align-items: center; margin-top: 21px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .planet-caption > span:first-child { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; }
 .caption-line { width: 28px; height: 1px; background: #5c729e; margin: 0 3px; }
@@ -88,7 +89,7 @@ svg { flex-shrink: 0; }
 .arrival-tail { display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 10px; color: #b6d1f0; }
 .has-dreams .wall-intro { padding-top: 30px; }
 .has-dreams .wall-intro h1 { font-size: clamp(38px, 4.1vw, 64px); }
-.has-dreams .wall-intro > p { margin-top: 12px; font-size: 16px; }
+.has-dreams .wall-tagline { margin-top: 12px; font-size: 16px; }
 .has-dreams .planet-caption { display: none; }
 .has-dreams .dream-space { padding: 25px 0; }
 .has-dreams .planet-system { top: -5%; }
@@ -226,7 +227,7 @@ input::placeholder { color: #9cafce; }
   .has-dreams .wall-intro h1 { font-size: 40px; }
   .has-dreams .wall-intro h1 br { display: none; }
   .has-dreams .wall-intro h1 > span { margin-left: .25em; }
-  .has-dreams .wall-intro > p { font-size: 13px; margin-top: 8px; }
+.has-dreams .wall-tagline { font-size: 13px; margin-top: 8px; }
   .has-dreams .dream-space { padding-block: 20px; }
   .dream-card { padding: 16px 18px; }
   .dream-card p { font-size: 20px; line-height: 1.6; margin-bottom: 15px; }
@@ -237,14 +238,15 @@ input::placeholder { color: #9cafce; }
   .wall-header { gap: 16px; align-items: flex-start; }
   .brand > span { font-size: 23px; }
   .brand > svg { width: 27px; }
-  .brand small { font-size: 6px; letter-spacing: .09em; }
+  .brand small { font-size: 9px; max-width: 22ch; line-height: 1.5; }
   .header-status { flex-direction: column; align-items: flex-end; gap: 10px; }
   .round-tag { font-size: 10px; padding: 5px 11px; }
   .round-tag b { font-size: 13px; }
   .live-status { font-size: 9px; gap: 5px; }
   .wall-intro { padding-top: 49px; }
   .wall-intro h1 { font-size: clamp(35px, 8.6vw, 58px); line-height: 1.12; }
-  .wall-intro > p { font-size: 14px; margin-top: 19px; max-width: 26ch; }
+  .wall-tagline { font-size: 14px; margin-top: 19px; max-width: 26ch; }
+  .workshop-name { font-size: 11px; }
   .planet-caption { font-size: 8px; margin-top: 19px; gap: 6px; letter-spacing: .02em; }
   .caption-line { width: 16px; }
   .planet-system { top: 130px; width: 110vw; right: -50%; }
@@ -266,7 +268,7 @@ input::placeholder { color: #9cafce; }
   .arrival-tail { font-size: 8px; }
   .has-dreams .wall-intro { padding-top: 35px; }
   .has-dreams .wall-intro h1 { font-size: clamp(32px, 8.4vw, 52px); }
-  .has-dreams .wall-intro > p { font-size: 12px; }
+  .has-dreams .wall-tagline { font-size: 12px; }
   .has-dreams .planet-system { top: 150px; }
   .wall-footer { align-items: center; gap: 10px; font-size: 9px; }
   .dream-count { gap: 6px; }

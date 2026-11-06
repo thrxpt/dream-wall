@@ -82,7 +82,8 @@ export function DreamWall() {
 
     <section className="wall-intro" aria-labelledby="event-title">
       <h1 id="event-title">Beyond the Star.<br /><span>Dream Begin.</span></h1>
-      <p>ให้ความฝันของเธอ ออกเดินทางไกลกว่าดวงดาว</p>
+      <p className="wall-tagline">ให้ความฝันของเธอ ออกเดินทางไกลกว่าดวงดาว</p>
+      <p className="workshop-name">Terminal of Despina · CLI Workshop</p>
       <div className="planet-caption"><span /> NEPTUNE <span className="caption-line" /> ดาวแห่งวิศวกรรมคอมพิวเตอร์</div>
     </section>
 
