@@ -151,7 +151,7 @@ Depth comes from the radial sky, screened Neptune image and tonal, bordered pane
 
 ## Shapes
 
-Fine orbital ellipses and circular stars belong to the sky. Controls have small rounded corners; cards are broader and the arrival/dialog share the feature radius. Round identifiers are outlined capsules. Borders, rather than heavy shadows, separate reading and operating surfaces.
+Fine orbital ellipses and circular stars belong to the sky. Pointed stars, including bright sky stars and interface decorations, use the supplied transparent `assets/sparkle.png` through a shared Sparkle component. Plain circular stars and status dots retain their existing CSS shapes. Pointed sky stars have slightly varied, deterministic rotation angles between −15° and 15° so server/client rendering and live updates remain stable. Sky stars retain their staggered twinkle. Controls have small rounded corners; cards are broader and the arrival/dialog share the feature radius. Round identifiers are outlined capsules. Borders, rather than heavy shadows, separate reading and operating surfaces.
 
 ## Components
 

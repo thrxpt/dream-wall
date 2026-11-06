@@ -110,7 +110,7 @@ test("desktop projector and mobile stay readable, HTML remains text, and reset t
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.locator(".dream-grid.is-current .dream-card")).toHaveCount(6);
-  await expect(page.locator(".dream-card img")).toHaveCount(0);
+  await expect(page.locator(".dream-card p img")).toHaveCount(0);
   await page.screenshot({ path: ".impeccable/review/desktop.png", fullPage: true, animations: "disabled" });
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 1440);
   const footer = await page.locator(".wall-footer").boundingBox();

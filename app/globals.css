@@ -27,13 +27,13 @@ button, input, a { outline-offset: 5px; }
 ::selection { background: #3565a8; color: white; }
 input { caret-color: var(--cyan); }
 svg { flex-shrink: 0; }
+.sparkle { display: block; object-fit: contain; flex-shrink: 0; }
 
 .wall-shell { min-height: 100svh; padding: 32px 4.5vw 22px; position: relative; display: flex; flex-direction: column; isolation: isolate; overflow: hidden; }
 .sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 82% 34%, #132753 0%, #080f24 38%, var(--space) 75%); }
 .starfield { position: absolute; inset: 0; }
 .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #c4d7ff; opacity: .4; animation: star-twinkle 4s ease-in-out infinite; }
-.star.bright { width: 3px; height: 3px; opacity: .85; }
-.star.bright::after { content: ""; position: absolute; left: -3px; top: 1px; height: 1px; width: 9px; background: #a3c4fa; opacity: .7; }
+.star.bright { width: 14px; height: 14px; background: none; border-radius: 0; opacity: .85; }
 .planet-system { position: absolute; top: 8%; right: -7%; width: min(68vw, 1050px); aspect-ratio: 1; }
 .neptune { position: absolute; width: 73%; height: auto; top: 6%; left: 15%; mix-blend-mode: screen; opacity: .88; transform: rotate(-22deg); animation: neptune-drift 120s linear infinite; }
 .is-paused .neptune, .is-paused .star, .is-paused .orbital-star,
@@ -67,6 +67,7 @@ svg { flex-shrink: 0; }
 .dream-space { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 32px 0; min-height: 270px; }
 .empty-sky { display: flex; flex-direction: column; align-items: flex-start; padding: 16px 0 20px; }
 .empty-sky > svg { color: var(--blue); margin-bottom: 19px; }
+.empty-sky > .sparkle { margin-bottom: 19px; }
 .empty-sky h2 { font-weight: 500; font-size: clamp(22px, 2.2vw, 32px); margin: 0; line-height: 1.6; text-wrap: balance; }
 .empty-sky > p { color: var(--muted); margin: 9px 0 22px; font-size: 15px; line-height: 1.8; }
 .waiting-line { color: #b8d8ed; display: inline-flex; gap: 8px; align-items: center; font-size: 11px; }
@@ -78,9 +79,7 @@ svg { flex-shrink: 0; }
 .is-paused .dream-grid { animation: none; }
 .dream-card { background: #0c162cf5; border: 1px solid #31476a; border-radius: 14px; padding: 20px 22px 17px; min-height: 160px; display: flex; flex-direction: column; justify-content: space-between; }
 .arrival, .dream-part { animation: dream-fade 500ms ease-out both; }
-.dream-star { color: #94c5ff; margin-bottom: 12px; }
-.dream-card:nth-child(3n + 2) .dream-star { color: #b7b9ff; }
-.dream-card:nth-child(3n) .dream-star { color: #8ce0e6; }
+.dream-star { margin-bottom: 12px; }
 .dream-card p { font-family: "Noto Sans Thai", var(--font); font-size: clamp(20px, 1.55vw, 27px); line-height: 1.65; font-weight: 500; margin: 0 0 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .dream-card p.long-dream { font-size: clamp(17px, 1.35vw, 23px); }
 .dream-signature { font-size: 8px; letter-spacing: .1em; color: #adbfdf; display: flex; justify-content: space-between; align-items: center; margin-top: auto; gap: 12px; }
@@ -104,7 +103,6 @@ svg { flex-shrink: 0; }
 .wall-pagination button:hover::after { background: white; }
 .wall-footer { padding-top: 16px; border-top: 1px solid #6278a130; min-height: 48px; font-size: 11px; color: var(--muted); }
 .dream-count { display: inline-flex; align-items: center; gap: 8px; }
-.dream-count > svg { color: var(--blue); }
 .dream-count b { font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .footer-motto { font-size: 10px; color: #9eb0d0; }
 .back-link:hover { color: white; }
@@ -148,7 +146,6 @@ svg { flex-shrink: 0; }
 .dream-management { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); overflow: hidden; }
 .list-heading { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 23px 25px; }
 .list-heading h2 { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 550; margin: 0; }
-.list-heading h2 > svg { color: var(--blue); }
 .list-heading h2 > span { font-size: 12px; padding: 4px 8px; border-radius: 6px; color: var(--blue); background: #1a2b49; font-variant-numeric: tabular-nums; }
 .list-live { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; color: var(--muted); }
 .list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 0 25px 20px; border-bottom: 1px solid var(--line); }
@@ -161,7 +158,7 @@ svg { flex-shrink: 0; }
 .search-field:focus-within { outline: 2px solid var(--cyan); outline-offset: 3px; }
 input::placeholder { color: #9cafce; }
 .admin-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 68px 24px; }
-.admin-empty > svg { color: #84a4d4; margin-bottom: 14px; }
+.admin-empty > .sparkle { margin-bottom: 14px; }
 .admin-empty h3 { font-size: 17px; font-weight: 500; margin: 0 0 8px; }
 .admin-empty p { font-size: 12px; line-height: 1.9; color: var(--muted); margin: 0; }
 .dream-list { list-style: none; padding: 0; margin: 0; max-height: 580px; overflow-y: auto; }
@@ -276,7 +273,7 @@ input::placeholder { color: #9cafce; }
   .wall-footer { align-items: center; gap: 10px; font-size: 9px; }
   .dream-count { gap: 6px; }
   .dream-count b { font-size: 16px; }
-  .dream-count > svg { width: 15px; }
+  .dream-count > .sparkle { width: 15px; height: 15px; }
   .projector-control { flex-direction: column; align-items: flex-start; gap: 12px; }
   .admin-header { padding: 22px; align-items: center; }
   .admin-header .button { font-size: 10px; padding: 9px 10px; min-height: 37px; }
@@ -295,7 +292,7 @@ input::placeholder { color: #9cafce; }
   .search-field { width: 100%; }
   .dream-list li { padding: 19px 15px; gap: 10px; flex-wrap: wrap; }
   .list-star { width: 30px; height: 30px; }
-  .list-star > svg { width: 15px; }
+  .list-star > .sparkle { width: 15px; height: 15px; }
   .dream-list-body { flex-basis: calc(100% - 40px); }
   .dream-list-body > p { font-size: 14px; }
   .dream-list li > .button { margin-left: 40px; padding: 8px 12px; min-height: 36px; font-size: 11px; }

@@ -7,3 +7,7 @@
 - Credit: NASA/JPL
 - Use: https://www.nasa.gov/nasa-brand-center/images-and-media/
 - Processing: resized to 1200px wide and encoded as WebP; no generated imagery.
+
+# Sparkle image
+
+`assets/sparkle.png` was supplied by the project owner. The original transparent 81×81 PNG is imported directly for pointed sky stars and decorative star icons. Plain circular stars remain CSS shapes.

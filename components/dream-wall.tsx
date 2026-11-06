@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Radio, Sparkles, Star } from "lucide-react";
+import { Radio } from "lucide-react";
 import { Brand } from "./brand";
 import { Sky } from "./sky";
+import { Sparkle } from "./sparkle";
 import { useWall } from "@/lib/use-wall";
 import { advanceShow, emptyShow, reconcileShow, type ShowState } from "@/lib/show";
 import type { WallSnapshot } from "@/lib/contracts";
@@ -123,19 +124,19 @@ export function DreamWall() {
     <section className="dream-space" aria-label="กำแพงความฝัน">
       {loading && !snapshot ? <div className="empty-sky"><OrbitLoader /><h2>กำลังเปิดประตูสู่จักรวาล</h2><p>กำลังเชื่อมต่อกำแพงความฝัน</p></div>
       : !snapshot ? <div className="empty-sky"><Radio size={36} strokeWidth={1.2} aria-hidden="true" /><h2>ยังเชื่อมต่อกำแพงไม่ได้</h2><p>ตรวจสอบการเชื่อมต่อ ระบบจะลองใหม่ให้เอง</p></div>
-      : dreams.length === 0 ? <div className="empty-sky"><Sparkles size={36} strokeWidth={1.2} aria-hidden="true" /><h2>จักรวาลนี้กำลังรอความฝันแรก</h2><p>ส่งความฝันจาก CLI แล้วมาดูดาวของเธอที่นี่</p><span className="waiting-line"><span className={`status-dot ${pollingEnabled ? "" : "idle"}`} /> {pollingEnabled ? "พร้อมรับความฝันของทุกคน" : "เตรียมออกเดินทางไปพร้อมกัน"}</span></div>
+      : dreams.length === 0 ? <div className="empty-sky"><Sparkle size={36} /><h2>จักรวาลนี้กำลังรอความฝันแรก</h2><p>ส่งความฝันจาก CLI แล้วมาดูดาวของเธอที่นี่</p><span className="waiting-line"><span className={`status-dot ${pollingEnabled ? "" : "idle"}`} /> {pollingEnabled ? "พร้อมรับความฝันของทุกคน" : "เตรียมออกเดินทางไปพร้อมกัน"}</span></div>
       : <>
         {active && <div className="arrival" key={active.id} role="status">
-          <div className="arrival-label"><Sparkles size={18} aria-hidden="true" /> ความฝันดวงใหม่เดินทางมาถึงแล้ว</div>
+          <div className="arrival-label"><Sparkle size={18} /> ความฝันดวงใหม่เดินทางมาถึงแล้ว</div>
           <p key={show.part} className={show.part > 0 ? "dream-part" : undefined}>{activeParts[show.part]}</p>
-          <span className="arrival-tail">{activeParts.length > 1 ? `ส่วนที่ ${show.part + 1}/${activeParts.length} · ความฝันดวงเดียวกัน` : "อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น"} <Star size={14} aria-hidden="true" /></span>
+          <span className="arrival-tail">{activeParts.length > 1 ? `ส่วนที่ ${show.part + 1}/${activeParts.length} · ความฝันดวงเดียวกัน` : "อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น"} <Sparkle size={14} /></span>
         </div>}
         {!active && <div className="dream-pages" key={snapshot.generation}>
           {dreamPages.map((pageDreams, index) => {
             const current = index === page % pages;
             return <div ref={current ? grid : undefined} className={`dream-grid${current ? " is-current" : ""}`} key={index} aria-hidden={!current} inert={!current}>
               {pageDreams.map((dream) => <article className="dream-card" key={`${dream.id}-${dream.part}`}>
-                <Star className="dream-star" size={17} strokeWidth={1.5} aria-hidden="true" />
+                <Sparkle className="dream-star" size={17} />
                 <p>{dream.text}</p>
                 <span className="dream-signature">{dream.parts > 1 ? `ความฝันดวงที่ ${dream.number} · ส่วน ${dream.part + 1}/${dream.parts}` : "A DREAM BEYOND THE STARS"}<span>{String(dream.number).padStart(2, "0")}</span></span>
               </article>)}
@@ -149,7 +150,7 @@ export function DreamWall() {
     </section>
 
     <footer className="wall-footer">
-      <span className="dream-count"><Star size={18} aria-hidden="true" /><b>{dreams.length}</b> ความฝันในจักรวาลนี้</span>
+      <span className="dream-count"><Sparkle size={18} /><b>{dreams.length}</b> ความฝันในจักรวาลนี้</span>
       <span className="footer-motto">Every dream starts somewhere. Yours starts here.</span>
     </footer>
     {fullscreenError && <p className="fullscreen-error" role="alert">{fullscreenError}</p>}
