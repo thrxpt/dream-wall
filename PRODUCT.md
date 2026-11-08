@@ -22,6 +22,7 @@ Windows workshop computers; the user has already prepared CLI instructions. The 
 - Persist dreams across reloads, process restarts, and deployments.
 - Public wall and submission API; admin page and management APIs require the shared password requested by the user, checked only on the server with a signed, expiring HttpOnly session cookie.
 - Admin can hide and restore individual dreams.
+- Admin can show or hide the feedback QR image across all displays. Visibility persists across reloads and resets, and follows automatic updates; stopped displays fetch it on reload or when brought back into view. The QR has a “Feedback” caption and no clickable link.
 - Admin can pause/resume all projector displays through shared, persisted playback state. Public displays have no footer controls or admin link; F toggles fullscreen. Reset resumes playback for the new round.
 - Admin can stop automatic polling across every display before the event. The setting persists across reloads and resets; submissions still save. Manual checks and returning to a visible tab fetch once. After admin re-enables polling, projector tabs resume when reloaded or brought back into view.
 - Confirmed reset permanently deletes all dreams, clears the display and animation queue, and starts the next round. No historical archive.

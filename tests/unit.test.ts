@@ -5,7 +5,7 @@ import { dreamParts, type Dream, type WallSnapshot } from "../lib/contracts";
 import { advanceShow, emptyShow, reconcileShow } from "../lib/show";
 
 const dream = (id: string): Dream => ({ id, dream: `ความฝัน ${id}`, createdAt: "2026-11-06T00:00:00Z", hidden: false });
-const snap = (round: number, dreams: Dream[], generation = round): WallSnapshot => ({ round, generation, revision: 1, paused: false, pollingEnabled: true, dreams });
+const snap = (round: number, dreams: Dream[], generation = round): WallSnapshot => ({ round, generation, revision: 1, paused: false, pollingEnabled: true, feedbackVisible: true, dreams });
 
 test("dream validation preserves Thai, multiline content and 500 Unicode code points", () => {
   assert.equal(parseDream({ dream: "  อยากสร้างเกม\nให้ทุกคนสนุก  " }), "อยากสร้างเกม\nให้ทุกคนสนุก");

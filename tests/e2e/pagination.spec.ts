@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("pagination stays fixed across full, tall and partial pages at every breakpoint", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("**/api/dreams", route => route.fulfill({ json: {
-    round: 1, generation: 1, revision: 1, paused: false, pollingEnabled: false,
+    round: 1, generation: 1, revision: 1, paused: false, pollingEnabled: false, feedbackVisible: true,
     dreams: Array.from({ length: 13 }, (_, index) => ({
       id: `pagination-${index}`, dream: index >= 6 && index < 12 ? "W".repeat(64) : `ความฝัน ${index + 1}`,
       createdAt: "2026-11-07T00:00:00Z", hidden: false,

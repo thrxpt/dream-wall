@@ -113,6 +113,26 @@ export function Admin() {
     } finally { setPending(null); }
   }
 
+  async function toggleFeedback() {
+    if (!snapshot || pending) return;
+    setPending("feedback");
+    setActionError("");
+    try {
+      const response = await fetch("/api/admin/feedback", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visible: !snapshot.feedbackVisible, round: snapshot.round, generation: snapshot.generation }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setNotice(result.feedbackVisible ? "แสดง QR แบบประเมินบนทุกจอแล้ว" : "ซ่อน QR แบบประเมินจากทุกจอแล้ว");
+      await refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "เปลี่ยนการแสดง QR ไม่สำเร็จ กรุณาลองอีกครั้ง");
+      void refresh();
+    } finally { setPending(null); }
+  }
+
   function openReset() {
     if (!snapshot) return;
     setResetContext({ round: snapshot.round, generation: snapshot.generation });
@@ -168,6 +188,8 @@ export function Admin() {
       <section className="projector-control" aria-labelledby="polling-title"><div><h2 id="polling-title">อัปเดตข้อมูลอัตโนมัติ</h2><p>หยุดเช็กข้อมูลทุก 2 วินาทีบนทุกจอระหว่างรอเริ่มงาน ความฝันที่ส่งมายังบันทึกตามปกติ</p><p id="polling-resume-hint">เมื่อเปิดกลับ ให้รีเฟรชหรือสลับกลับไปที่แท็บโปรเจกเตอร์เพื่อเริ่มรับข้อมูล</p></div><div className="control-actions"><button className="button secondary" onClick={() => void togglePolling()} disabled={!snapshot || Boolean(error) || Boolean(pending)} aria-pressed={!pollingEnabled} aria-describedby="polling-resume-hint">{pollingEnabled ? <Pause size={17} aria-hidden="true" /> : <Play size={17} aria-hidden="true" />}{pending === "polling" ? "กำลังบันทึก…" : pollingEnabled ? "หยุดอัปเดตอัตโนมัติ" : "เริ่มอัปเดตอัตโนมัติ"}</button><button className="button quiet" onClick={() => void refresh()} disabled={loading || Boolean(pending)}><RefreshCw size={17} aria-hidden="true" /> เช็กข้อมูลตอนนี้</button></div></section>
 
       <section className="projector-control" aria-labelledby="playback-title"><div><h2 id="playback-title">ควบคุมจอโปรเจกเตอร์</h2><p>{pollingEnabled ? "พักการเปลี่ยนข้อความและแอนิเมชันบนทุกจอ โดยยังรับความฝันใหม่ได้" : "เปิดอัปเดตข้อมูลอัตโนมัติก่อน เพื่อให้จอรับคำสั่งพักหรือเล่นต่อ"}</p></div><button className="button secondary" onClick={() => void togglePlayback()} disabled={!snapshot || !pollingEnabled || Boolean(error) || Boolean(pending)} aria-pressed={snapshot?.paused ?? false}>{snapshot?.paused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}{pending === "playback" ? "กำลังบันทึก…" : snapshot?.paused ? "เล่นต่อ" : "พักข้อความ"}</button></section>
+
+      <section className="projector-control" aria-labelledby="feedback-title"><div><h2 id="feedback-title">QR แบบประเมินกิจกรรม</h2><p>แสดงหรือซ่อน QR บนทุกจอ สถานะคงอยู่หลังโหลดหน้าใหม่และรีเซ็ต</p>{!pollingEnabled && <p>จอที่หยุดอัปเดตจะรับค่านี้เมื่อรีเฟรช หรือกลับมาเปิดอัปเดตอัตโนมัติ</p>}</div><button className="button secondary" onClick={() => void toggleFeedback()} disabled={!snapshot || Boolean(error) || Boolean(pending)} aria-pressed={snapshot?.feedbackVisible ?? false}>{snapshot?.feedbackVisible ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}{pending === "feedback" ? "กำลังบันทึก…" : snapshot?.feedbackVisible ? "ซ่อน QR แบบประเมิน" : "แสดง QR แบบประเมิน"}</button></section>
 
       <section className="dream-management" aria-labelledby="dream-list-title">
         <div className="list-heading"><h2 id="dream-list-title"><Sparkle size={21} /> ความฝันในรอบนี้ <span>{dreams.length}</span></h2><span className="list-live"><span className={`status-dot ${error ? "disconnected" : !pollingEnabled ? "idle" : ""}`} />{loading ? "กำลังโหลด" : error ? "ขาดการเชื่อมต่อ" : !pollingEnabled ? "หยุดอัปเดตอยู่" : "อัปเดตอัตโนมัติ"}</span></div>

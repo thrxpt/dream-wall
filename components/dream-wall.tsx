@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Radio } from "lucide-react";
+import Image from "next/image";
 import { Brand } from "./brand";
 import { Sky } from "./sky";
 import { Sparkle } from "./sparkle";
@@ -113,10 +114,16 @@ export function DreamWall() {
     </header>
 
     <section className="wall-intro" aria-labelledby="event-title">
-      <h1 id="event-title">Beyond the Star.<br /><span>Dream Begin.</span></h1>
-      <p className="wall-tagline">ให้ความฝันของเธอ ออกเดินทางไกลกว่าดวงดาว</p>
-      <p className="workshop-name">Terminal of Despina · CLI Workshop</p>
-      <div className="planet-caption"><span /> NEPTUNE <span className="caption-line" /> ดาวแห่งวิศวกรรมคอมพิวเตอร์</div>
+      <div>
+        <h1 id="event-title">Beyond the Star.<br /><span>Dream Begin.</span></h1>
+        <p className="wall-tagline">ให้ความฝันของเธอ ออกเดินทางไกลกว่าดวงดาว</p>
+        <p className="workshop-name">Terminal of Despina · CLI Workshop</p>
+        <div className="planet-caption"><span /> NEPTUNE <span className="caption-line" /> ดาวแห่งวิศวกรรมคอมพิวเตอร์</div>
+      </div>
+      {snapshot?.feedbackVisible && <figure className="wall-feedback">
+        <Image src="/images/feedback.png" alt="QR code แบบประเมินกิจกรรม" width={532} height={532} unoptimized />
+        <figcaption>Feedback</figcaption>
+      </figure>}
     </section>
 
     {error && <div className="connection-banner" role="status"><Radio size={18} aria-hidden="true" /><span>{error} · {pollingEnabled ? "ระบบจะลองใหม่อัตโนมัติ" : "รีเฟรชหน้านี้เพื่อลองอีกครั้ง"}</span></div>}

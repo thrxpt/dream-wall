@@ -12,6 +12,7 @@ INSERT INTO wall_state (id) VALUES (1) ON CONFLICT DO NOTHING;
 ALTER TABLE wall_state ADD COLUMN IF NOT EXISTS generation integer NOT NULL DEFAULT 1 CHECK (generation > 0);
 ALTER TABLE wall_state ADD COLUMN IF NOT EXISTS paused boolean NOT NULL DEFAULT false;
 ALTER TABLE wall_state ADD COLUMN IF NOT EXISTS polling_enabled boolean NOT NULL DEFAULT true;
+ALTER TABLE wall_state ADD COLUMN IF NOT EXISTS feedback_visible boolean NOT NULL DEFAULT true;
 
 CREATE TABLE IF NOT EXISTS dreams (
   id uuid PRIMARY KEY,

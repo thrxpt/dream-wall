@@ -47,7 +47,7 @@ before(async () => {
   }
   throw new Error(`Test server did not start: ${serverLog}`);
 });
-beforeEach(async () => { await sql`TRUNCATE dreams`; await sql`UPDATE wall_state SET round = 1, generation = 1, revision = 0, paused = false, polling_enabled = true WHERE id = 1`; });
+beforeEach(async () => { await sql`TRUNCATE dreams`; await sql`UPDATE wall_state SET round = 1, generation = 1, revision = 0, paused = false, polling_enabled = true, feedback_visible = true WHERE id = 1`; });
 after(async () => {
   if (server && server.exitCode === null) { const exited = once(server, "exit"); server.kill("SIGTERM"); await exited; }
   await sql.end();
@@ -208,6 +208,35 @@ test("polling can stop globally without blocking submissions, persists through s
   assert.equal((await (await request("/api/dreams")).json()).pollingEnabled, true);
 });
 
+test("feedback visibility is validated, shared, persisted through setup and reset, and rejects stale actions", async () => {
+  assert.equal((await (await request("/api/dreams")).json()).feedbackVisible, true);
+  for (const visible of [undefined, null, "false", 0]) {
+    assert.equal((await request("/api/admin/feedback", { round: 1, generation: 1, visible }, "PATCH")).status, 400);
+  }
+  assert.equal((await request("/api/admin/feedback", { round: 1, visible: false }, "PATCH")).status, 400);
+  assert.equal((await (await request("/api/dreams")).json()).revision, 0);
+  const foreign = await fetch(`${base}/api/admin/feedback`, {
+    method: "PATCH", headers: { "Content-Type": "application/json", origin: "https://foreign.test", Cookie: adminCookie },
+    body: JSON.stringify({ round: 1, generation: 1, visible: false }),
+  });
+  assert.equal(foreign.status, 403);
+  assert.equal((await request("/api/admin/feedback", { round: 1, generation: 1, visible: false }, "PATCH")).status, 200);
+  await submit("ความฝันยังแสดงได้เมื่อซ่อน QR");
+  await sql.unsafe(await readFile(new URL("../db/schema.sql", import.meta.url), "utf8"));
+  for (const path of ["/api/dreams", "/api/admin/dreams"]) {
+    const snapshot = await (await request(path)).json();
+    assert.equal(snapshot.feedbackVisible, false);
+    assert.equal(snapshot.revision, 2);
+    assert.equal(snapshot.dreams.length, 1);
+  }
+  const reset = await (await request("/api/admin/reset", { round: 1, generation: 1, nextRound: 1, confirm: "RESET" })).json();
+  assert.equal(reset.feedbackVisible, false);
+  assert.equal((await request("/api/admin/feedback", { round: 1, generation: 1, visible: true }, "PATCH")).status, 409);
+  assert.equal((await (await request("/api/dreams")).json()).revision, reset.revision);
+  assert.equal((await request("/api/admin/feedback", { round: 1, generation: reset.generation, visible: true }, "PATCH")).status, 200);
+  assert.equal((await (await request("/api/dreams")).json()).feedbackVisible, true);
+});
+
 test("admin page and all management APIs require a session while CLI submission stays public", async () => {
   const page = await fetch(`${base}/admin`);
   const html = await page.text();
@@ -223,6 +252,7 @@ test("admin page and all management APIs require a session while CLI submission 
     ["/api/admin/reset", "POST", { round: 1, generation: 1, nextRound: 1, confirm: "RESET" }],
     ["/api/admin/playback", "PATCH", { round: 1, generation: 1, paused: true }],
     ["/api/admin/polling", "PATCH", { round: 1, generation: 1, enabled: false }],
+    ["/api/admin/feedback", "PATCH", { round: 1, generation: 1, visible: false }],
   ] as const) {
     assert.equal((await fetch(`${base}${path}`, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined })).status, 401);
   }

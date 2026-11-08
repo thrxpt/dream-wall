@@ -6,6 +6,52 @@ test.beforeEach(async ({ request, context }) => {
   const state = await (await request.get("/api/admin/dreams")).json();
   expect((await request.patch("/api/admin/polling", { data: { round: state.round, generation: state.generation, enabled: true } })).ok()).toBe(true);
   await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
+  const reset = await (await request.get("/api/admin/dreams")).json();
+  expect((await request.patch("/api/admin/feedback", { data: { round: reset.round, generation: reset.generation, visible: true } })).ok()).toBe(true);
+});
+
+test("admin feedback visibility syncs across displays only while automatic updates run", async ({ page, context, request }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/");
+  const other = await context.newPage();
+  await other.goto("/");
+  const qr = (display: typeof page) => display.getByRole("img", { name: "QR code แบบประเมินกิจกรรม" });
+  for (const display of [page, other]) {
+    await expect(qr(display)).toBeVisible();
+    await expect(qr(display)).toHaveJSProperty("naturalWidth", 532);
+    await expect(display.locator("a:has(.wall-feedback)")).toHaveCount(0);
+    await expect(display.getByText("แชร์ความคิดเห็น")).toHaveCount(0);
+  }
+  const admin = await context.newPage();
+  await admin.goto("/admin");
+  await admin.getByRole("button", { name: "ซ่อน QR แบบประเมิน", exact: true }).click();
+  await expect(admin.getByRole("button", { name: "แสดง QR แบบประเมิน", exact: true })).toHaveAttribute("aria-pressed", "false");
+  for (const display of [page, other]) await expect(qr(display)).toHaveCount(0);
+  await page.reload();
+  await admin.reload();
+  await expect(qr(page)).toHaveCount(0);
+  await expect(admin.getByRole("button", { name: "แสดง QR แบบประเมิน", exact: true })).toBeEnabled();
+  await admin.getByRole("button", { name: "หยุดอัปเดตอัตโนมัติ", exact: true }).click();
+  for (const display of [page, other]) await expect(display.getByText("รอเริ่มงาน", { exact: true })).toBeVisible();
+  await admin.getByRole("button", { name: "แสดง QR แบบประเมิน", exact: true }).click();
+  await expect(admin.getByRole("button", { name: "ซ่อน QR แบบประเมิน", exact: true })).toBeEnabled();
+  await page.clock.install();
+  await other.clock.install();
+  for (const display of [page, other]) {
+    await display.clock.fastForward(10000);
+    await expect(qr(display)).toHaveCount(0);
+  }
+  await admin.getByRole("button", { name: "เริ่มอัปเดตอัตโนมัติ", exact: true }).click();
+  for (const display of [page, other]) {
+    await display.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await expect(qr(display)).toBeVisible();
+  }
+  const state = await (await request.get("/api/admin/dreams")).json();
+  await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
+  await page.reload();
+  await expect(qr(page)).toBeVisible();
+  await page.screenshot({ path: ".impeccable/review/feedback-projector.png", fullPage: true, animations: "disabled" });
+  await admin.screenshot({ path: ".impeccable/review/feedback-admin.png", fullPage: true, animations: "disabled" });
 });
 
 test("admin can stop every display's polling until the event starts", async ({ page, context, request }) => {
