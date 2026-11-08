@@ -37,7 +37,7 @@ export function AdminLogin() {
     <div className="admin-login">
       <section className="login-panel" aria-labelledby="login-title">
         <LockKeyhole size={30} strokeWidth={1.5} aria-hidden="true" />
-        <h1 id="login-title">เข้าสู่หน้าผู้ดูแล</h1>
+        <h1 id="login-title">เข้าสู่หน้า Admin</h1>
         <p>ใส่รหัสผ่านเพื่อจัดการความฝันและเริ่มรอบใหม่</p>
         <form onSubmit={e => { e.preventDefault(); void login(); }}>
           <label htmlFor="admin-password">รหัสผ่าน</label>

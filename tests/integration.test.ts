@@ -240,7 +240,7 @@ test("feedback visibility is validated, shared, persisted through setup and rese
 test("admin page and all management APIs require a session while CLI submission stays public", async () => {
   const page = await fetch(`${base}/admin`);
   const html = await page.text();
-  assert.ok(html.includes("เข้าสู่หน้าผู้ดูแล"));
+  assert.ok(html.includes("เข้าสู่หน้า Admin"));
   assert.ok(!html.includes("ดูแลจักรวาลความฝัน"));
   assert.ok(!html.includes("cpediwa"));
   const submission = await fetch(`${base}/api/dreams`, { method: "POST", headers: { "Content-Type": "application/json" }, body: '{"dream":"ไม่ต้องล็อกอินตอนส่งความฝัน"}' });
@@ -270,7 +270,7 @@ test("incorrect passwords, forged cookies and expired sessions cannot grant admi
   const last = adminCookie.at(-1) === "0" ? "1" : "0";
   for (const cookie of ["dream-wall-admin=cpediwa", adminCookie.slice(0, -1) + last, `dream-wall-admin=${expired}`]) {
     assert.equal((await fetch(`${base}/api/admin/dreams`, { headers: { Cookie: cookie } })).status, 401);
-    assert.ok((await (await fetch(`${base}/admin`, { headers: { Cookie: cookie } })).text()).includes("เข้าสู่หน้าผู้ดูแล"));
+    assert.ok((await (await fetch(`${base}/admin`, { headers: { Cookie: cookie } })).text()).includes("เข้าสู่หน้า Admin"));
   }
 });
 

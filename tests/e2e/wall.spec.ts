@@ -292,7 +292,7 @@ test("password gate rejects mistakes, remembers login after reload, and logout l
   await context.clearCookies();
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/admin");
-  await expect(page.getByRole("heading", { name: "เข้าสู่หน้าผู้ดูแล" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "เข้าสู่หน้า Admin" })).toBeVisible();
   expect((await context.request.get("/api/admin/dreams")).status()).toBe(401);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill("incorrect");
   await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
@@ -307,7 +307,7 @@ test("password gate rejects mistakes, remembers login after reload, and logout l
   await page.reload();
   await expect(page.getByRole("heading", { name: "ดูแลจักรวาลความฝัน" })).toBeVisible();
   await page.getByRole("button", { name: "ออกจากระบบ", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "เข้าสู่หน้าผู้ดูแล" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "เข้าสู่หน้า Admin" })).toBeVisible();
   expect((await context.request.get("/api/admin/dreams")).status()).toBe(401);
   expect((await context.request.get("/api/dreams")).status()).toBe(200);
 });
