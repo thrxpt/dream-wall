@@ -14,4 +14,4 @@
 
 # Feedback QR code
 
-`feedback.png` was supplied by the project owner. The original 532×532 PNG encodes https://forms.gle/UYHHTB1MmwkFnjUGA and is displayed unchanged with additional white padding for scanning. The image has a “Feedback” caption and no clickable link; admins control its visibility.
+`feedback.png` was supplied by the project owner. The original 532×532 PNG encodes https://forms.gle/UYHHTB1MmwkFnjUGA and is displayed unchanged with its existing white border for scanning. The image has a “Feedback” caption and no clickable link; admins control its visibility.

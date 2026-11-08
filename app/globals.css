@@ -59,7 +59,7 @@ svg { flex-shrink: 0; }
 .wall-intro { padding-top: clamp(42px, 7vh, 86px); position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 32px; }
 .wall-intro > div { min-width: 0; }
 .wall-feedback { flex-shrink: 0; width: 160px; margin: 0; color: var(--ink); text-align: center; }
-.wall-feedback img { display: block; width: 100%; height: auto; padding: 8px; background: white; }
+.wall-feedback img { display: block; width: 100%; height: auto; }
 .wall-feedback figcaption { margin-top: 4px; font-size: 12px; font-weight: 600; line-height: 1.5; }
 .wall-intro h1 { font-size: clamp(45px, 5.9vw, 90px); line-height: 1.08; letter-spacing: -.04em; font-weight: 650; margin: 0; max-width: 900px; text-wrap: balance; }
 .wall-intro h1 > span { color: var(--blue); }
