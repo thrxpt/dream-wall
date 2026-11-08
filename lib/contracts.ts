@@ -17,12 +17,3 @@ export type WallSnapshot = {
   feedbackVisible: boolean;
   dreams: Dream[];
 };
-
-// Projector slides show every character without shrinking long submissions to
-// unreadable type. Whitespace is condensed only for presentation.
-export function dreamParts(dream: string): string[] {
-  const graphemes = Array.from(new Intl.Segmenter("th", { granularity: "grapheme" }).segment(dream.replace(/\s+/gu, " ")), s => s.segment);
-  const parts: string[] = [];
-  for (let i = 0; i < graphemes.length; i += 64) parts.push(graphemes.slice(i, i + 64).join(""));
-  return parts;
-}

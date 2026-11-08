@@ -108,7 +108,7 @@ test("two concurrent resets advance once and a racing submission cannot leak old
 });
 
 test("invalid input fails before a write, and HTML is returned as text data", async () => {
-  for (const body of [{}, { dream: " " }, { dream: 123 }, { dream: "a".repeat(501) }]) {
+  for (const body of [{}, { dream: " " }, { dream: 123 }, { dream: "a".repeat(500) + "\u0000" }]) {
     assert.equal((await request("/api/dreams", body)).status, 400);
   }
   assert.equal((await fetch(`${base}/api/admin/reset`, { method: "POST", headers: { "Content-Type": "application/json", origin: "https://foreign.test", Cookie: adminCookie }, body: '{"round":1,"confirm":"RESET"}' })).status, 403);
@@ -117,6 +117,18 @@ test("invalid input fails before a write, and HTML is returned as text data", as
   const html = '<img src=x onerror="alert(1)">';
   await submit(html);
   assert.equal((await (await request("/api/dreams")).json()).dreams[0].dream, html);
+});
+
+test("oversized dreams are accepted, persisted with dots, and returned consistently", async () => {
+  const text = "🚀".repeat(501);
+  const expected = "🚀".repeat(497) + "...";
+  const entry = await submit(text);
+  const [stored] = await sql`SELECT dream FROM dreams WHERE id = ${entry.id}`;
+  assert.equal(stored.dream, expected);
+  for (const path of ["/api/dreams", "/api/admin/dreams"]) {
+    const snapshot = await (await request(path)).json();
+    assert.equal(snapshot.dreams[0].dream, expected);
+  }
 });
 
 test("404 moderation rolls back the revision and setup is nondestructive", async () => {
