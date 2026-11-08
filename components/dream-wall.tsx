@@ -10,7 +10,6 @@ import { Sparkle } from "./sparkle";
 import { useWall } from "@/lib/use-wall";
 import { advanceShow, emptyShow, reconcileShow, type ShowState } from "@/lib/show";
 import type { WallSnapshot } from "@/lib/contracts";
-import { dreamParts } from "@/lib/contracts";
 
 function showReducer(state: ShowState, event: { snapshot: WallSnapshot; paused: boolean } | "advance") {
   return event === "advance" ? advanceShow(state) : reconcileShow(state, event.snapshot, event.paused);
@@ -20,11 +19,31 @@ export function DreamWall() {
   const { snapshot, error, loading } = useWall();
   const [show, dispatch] = useReducer(showReducer, emptyShow);
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(6);
   const [fullscreenError, setFullscreenError] = useState("");
   const grid = useRef<HTMLDivElement>(null);
   const pageFade = useRef<Animation | null>(null);
   const paused = snapshot?.paused ?? false;
   const pollingEnabled = snapshot?.pollingEnabled ?? true;
+
+  useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 700px)");
+    const narrow = window.matchMedia("(max-width: 380px)");
+    const short = window.matchMedia("(max-height: 600px)");
+    const resize = () => {
+      setPageSize(narrow.matches ? 1 : mobile.matches || short.matches ? 2 : 6);
+      setPage(0);
+    };
+    resize();
+    mobile.addEventListener("change", resize);
+    narrow.addEventListener("change", resize);
+    short.addEventListener("change", resize);
+    return () => {
+      mobile.removeEventListener("change", resize);
+      narrow.removeEventListener("change", resize);
+      short.removeEventListener("change", resize);
+    };
+  }, []);
 
   const toggleFullscreen = useCallback(async () => {
     try {
@@ -44,7 +63,7 @@ export function DreamWall() {
     if (!show.active || paused) return;
     const timer = setTimeout(() => dispatch("advance"), 6500);
     return () => clearTimeout(timer);
-  }, [show.active, show.part, paused]);
+  }, [show.active, paused]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -79,21 +98,16 @@ export function DreamWall() {
   }, [paused]);
 
   const dreams = snapshot?.dreams ?? [];
-  const slides = dreams.flatMap((dream, index) => {
-    const parts = dreamParts(dream.dream);
-    return parts.map((text, part) => ({ ...dream, text, part, parts: parts.length, number: index + 1 }));
-  });
-  const pages = Math.ceil(slides.length / 6);
-  const dreamPages = Array.from({ length: pages }, (_, index) => slides.slice(index * 6, index * 6 + 6));
+  const pages = Math.ceil(dreams.length / pageSize);
+  const dreamPages = Array.from({ length: pages }, (_, index) => dreams.slice(index * pageSize, index * pageSize + pageSize));
   // Filter against the newest snapshot while the reducer catches up after reset/hide.
   const active = show.generation === snapshot?.generation && dreams.some(d => d.id === show.active?.id) ? show.active : null;
-  const activeParts = active ? dreamParts(active.dream) : [];
 
   // Data changes take precedence over a pending page change.
   useLayoutEffect(() => {
     pageFade.current?.cancel();
     pageFade.current = null;
-  }, [snapshot?.revision, paused, active?.id]);
+  }, [snapshot?.revision, paused, active?.id, pageSize]);
 
   useEffect(() => () => { pageFade.current?.cancel(); }, []);
 
@@ -135,17 +149,17 @@ export function DreamWall() {
       : <>
         {active && <div className="arrival" key={active.id} role="status">
           <div className="arrival-label"><Sparkle size={18} /> ความฝันดวงใหม่เดินทางมาถึงแล้ว</div>
-          <p key={show.part} className={show.part > 0 ? "dream-part" : undefined}>{activeParts[show.part]}</p>
-          <span className="arrival-tail">{activeParts.length > 1 ? `ส่วนที่ ${show.part + 1}/${activeParts.length} · ความฝันดวงเดียวกัน` : "อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น"} <Sparkle size={14} /></span>
+          <DreamText text={active.dream} />
+          <span className="arrival-tail">อีกหนึ่งความฝัน อีกหนึ่งจุดเริ่มต้น <Sparkle size={14} /></span>
         </div>}
         {!active && <div className="dream-pages" key={snapshot.generation}>
           {dreamPages.map((pageDreams, index) => {
             const current = index === page % pages;
             return <div ref={current ? grid : undefined} className={`dream-grid${current ? " is-current" : ""}`} key={index} aria-hidden={!current} inert={!current}>
-              {pageDreams.map((dream) => <article className="dream-card" key={`${dream.id}-${dream.part}`}>
+              {pageDreams.map((dream, dreamIndex) => <article className="dream-card" key={dream.id}>
                 <Sparkle className="dream-star" size={17} />
-                <p>{dream.text}</p>
-                <span className="dream-signature">{dream.parts > 1 ? `ความฝันดวงที่ ${dream.number} · ส่วน ${dream.part + 1}/${dream.parts}` : "A DREAM BEYOND THE STARS"}<span>{String(dream.number).padStart(2, "0")}</span></span>
+                <DreamText text={dream.dream} />
+                <span className="dream-signature">A DREAM BEYOND THE STARS<span>{String(index * pageSize + dreamIndex + 1).padStart(2, "0")}</span></span>
               </article>)}
             </div>;
           })}
@@ -162,6 +176,27 @@ export function DreamWall() {
     </footer>
     {fullscreenError && <p className="fullscreen-error" role="alert">{fullscreenError}</p>}
   </main>;
+}
+
+function DreamText({ text }: { text: string }) {
+  const paragraph = useRef<HTMLParagraphElement>(null);
+  useLayoutEffect(() => {
+    const element = paragraph.current;
+    if (!element) return;
+    const fit = () => {
+      const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight);
+      element.style.setProperty("--dream-lines", String(Math.max(1, Math.floor(element.clientHeight / lineHeight))));
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(element);
+    document.fonts.addEventListener("loadingdone", fit);
+    fit();
+    return () => {
+      observer.disconnect();
+      document.fonts.removeEventListener("loadingdone", fit);
+    };
+  }, [text]);
+  return <p ref={paragraph} className={text.length > 120 ? "long-dream" : undefined}><span>{text}</span></p>;
 }
 
 function OrbitLoader() {

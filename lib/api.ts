@@ -54,10 +54,13 @@ export async function readJson(request: Request): Promise<Record<string, unknown
 export function parseDream(body: Record<string, unknown>) {
   if (typeof body.dream !== "string") throw new HttpError(400, "dream ต้องเป็นข้อความ");
   const dream = body.dream.trim().normalize("NFC");
-  if (!dream || !dream.isWellFormed() || [...dream].length > MAX_DREAM_LENGTH || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(dream)) {
+  if (!dream || !dream.isWellFormed() || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(dream)) {
     throw new HttpError(400, `กรุณาส่งความฝันที่มีความยาว 1–${MAX_DREAM_LENGTH} ตัวอักษร`);
   }
-  return dream;
+  const characters = [...dream];
+  return characters.length > MAX_DREAM_LENGTH
+    ? characters.slice(0, MAX_DREAM_LENGTH - 3).join("") + "..."
+    : dream;
 }
 
 export function parseRound(body: Record<string, unknown>, field: "round" | "nextRound" | "generation" = "round") {

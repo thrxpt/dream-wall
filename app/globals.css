@@ -29,7 +29,8 @@ input { caret-color: var(--cyan); }
 svg { flex-shrink: 0; }
 .sparkle { display: block; object-fit: contain; flex-shrink: 0; }
 
-.wall-shell { min-height: 100svh; padding: 32px 4.5vw 22px; position: relative; display: flex; flex-direction: column; isolation: isolate; overflow: hidden; }
+.wall-shell { height: 100dvh; max-height: 100dvh; padding: 32px 4.5vw 22px; position: relative; display: flex; flex-direction: column; isolation: isolate; overflow: clip; }
+.wall-shell > :not(.dream-space):not(.sky) { flex-shrink: 0; }
 .sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 82% 34%, #132753 0%, #080f24 38%, var(--space) 75%); }
 .starfield { position: absolute; inset: 0; }
 .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #c4d7ff; opacity: .4; animation: star-twinkle 4s ease-in-out infinite; }
@@ -68,7 +69,7 @@ svg { flex-shrink: 0; }
 .planet-caption { display: flex; gap: 9px; align-items: center; margin-top: 21px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .planet-caption > span:first-child { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; }
 .caption-line { width: 28px; height: 1px; background: #5c729e; margin: 0 3px; }
-.dream-space { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 32px 0; min-height: 270px; }
+.dream-space { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 32px 0; min-height: 0; }
 .empty-sky { display: flex; flex-direction: column; align-items: flex-start; padding: 16px 0 20px; }
 .empty-sky > svg { color: var(--blue); margin-bottom: 19px; }
 .empty-sky > .sparkle { margin-bottom: 19px; }
@@ -77,21 +78,25 @@ svg { flex-shrink: 0; }
 .waiting-line { color: #b8d8ed; display: inline-flex; gap: 8px; align-items: center; font-size: 11px; }
 .orbit-loader { width: 36px; height: 36px; border: 1px solid #557bb8; border-radius: 50%; display: block; position: relative; margin-bottom: 20px; animation: orbit-spin 3s linear infinite; }
 .orbit-loader > span { width: 7px; height: 7px; position: absolute; left: 24px; background: var(--cyan); border-radius: 50%; }
-.dream-pages { display: grid; }
-.dream-grid { display: grid; grid-area: 1 / 1; align-self: center; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; visibility: hidden; }
+.dream-pages { display: grid; grid-template-rows: minmax(0, 1fr); flex: 1; min-height: 0; }
+.dream-grid { display: grid; grid-area: 1 / 1; min-height: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 16px; visibility: hidden; }
 .dream-grid.is-current { visibility: visible; animation: dream-fade 500ms ease-in-out both; }
 .is-paused .dream-grid { animation: none; }
-.dream-card { background: #0c162cf5; border: 1px solid #31476a; border-radius: 14px; padding: 20px 22px 17px; min-height: 160px; display: flex; flex-direction: column; justify-content: space-between; }
-.arrival, .dream-part { animation: dream-fade 500ms ease-out both; }
+.dream-card { background: #0c162cf5; border: 1px solid #31476a; border-radius: 14px; padding: 20px 22px 17px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+.dream-card > :not(p), .arrival > :not(p) { flex-shrink: 0; }
+.arrival { animation: dream-fade 500ms ease-out both; }
 .dream-star { margin-bottom: 12px; }
 .dream-card p { font-family: "Noto Sans Thai", var(--font); font-size: clamp(20px, 1.55vw, 27px); line-height: 1.65; font-weight: 500; margin: 0 0 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .dream-card p.long-dream { font-size: clamp(17px, 1.35vw, 23px); }
 .dream-signature { font-size: 8px; letter-spacing: .1em; color: #adbfdf; display: flex; justify-content: space-between; align-items: center; margin-top: auto; gap: 12px; }
 .dream-signature > span { font-size: 10px; font-variant-numeric: tabular-nums; }
-.arrival { margin: 0 0 20px; padding: 24px 30px; background: #132d51; border: 1px solid #6192c9; border-radius: 16px; }
+.arrival { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; margin: 0; padding: 24px 30px; background: #132d51; border: 1px solid #6192c9; border-radius: 16px; }
 .arrival-label { display: flex; align-items: center; gap: 9px; color: #b6e6ff; font-size: 13px; }
 .arrival p { font-family: "Noto Sans Thai", var(--font); font-size: clamp(25px, 2.7vw, 44px); line-height: 1.65; font-weight: 500; text-align: center; margin: 17px auto; max-width: 1000px; overflow-wrap: anywhere; white-space: pre-wrap; }
 .arrival p.long-dream { font-size: clamp(21px, 1.9vw, 31px); }
+.dream-card p, .arrival p { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.dream-card p > span, .arrival p > span { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--dream-lines, 1); }
+.arrival p { width: 100%; }
 .arrival-tail { display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 10px; color: #b6d1f0; }
 .has-dreams .wall-intro { padding-top: 30px; }
 .has-dreams .wall-intro h1 { font-size: clamp(38px, 4.1vw, 64px); }
@@ -211,7 +216,7 @@ input::placeholder { color: #9cafce; }
 @media (min-width: 1700px) {
   .wall-shell { padding-inline: 5vw; }
   .wall-intro { padding-top: 8vh; }
-  .dream-card { min-height: 210px; padding: 25px 30px; }
+  .dream-card { padding: 25px 30px; }
   .header-status, .round-tag, .live-status { font-size: 15px; }
   .brand > span { font-size: 30px; }
   .brand small { font-size: 10px; }
@@ -249,20 +254,22 @@ input::placeholder { color: #9cafce; }
   .round-tag { font-size: 10px; padding: 5px 11px; }
   .round-tag b { font-size: 13px; }
   .live-status { font-size: 9px; gap: 5px; }
-  .wall-intro { padding-top: 49px; flex-direction: column; align-items: flex-start; gap: 24px; }
-  .wall-intro h1 { font-size: clamp(35px, 8.6vw, 58px); line-height: 1.12; }
+  .wall-intro { padding-top: 24px; align-items: flex-start; gap: 14px; }
+  .wall-feedback { width: 88px; }
+  .wall-intro h1, .has-dreams .wall-intro h1 { font-size: clamp(24px, 5.6vw, 36px); }
+  .wall-intro h1 { line-height: 1.12; }
   .wall-tagline { font-size: 14px; margin-top: 19px; max-width: 26ch; }
   .workshop-name { font-size: 11px; }
   .planet-caption { font-size: 8px; margin-top: 19px; gap: 6px; letter-spacing: .02em; }
   .caption-line { width: 16px; }
   .planet-system { top: 130px; width: 110vw; right: -50%; }
   .neptune { opacity: .6; }
-  .dream-space { min-height: 310px; padding: 36px 0; }
+  .dream-space { padding: 36px 0; }
   .empty-sky { padding-top: 48px; }
   .empty-sky h2 { font-size: 20px; }
   .empty-sky > p { font-size: 12px; }
-  .dream-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .dream-card { padding: 16px 14px 13px; min-height: 150px; border-radius: 12px; }
+  .dream-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: 10px; }
+  .dream-card { padding: 16px 14px 13px; border-radius: 12px; }
   .dream-card p { font-size: 18px; margin-bottom: 18px; }
   .dream-card p.long-dream { font-size: 16px; }
   .dream-signature { font-size: 6px; letter-spacing: 0; gap: 7px; }
@@ -272,8 +279,7 @@ input::placeholder { color: #9cafce; }
   .arrival p { font-size: 24px; text-align: left; }
   .arrival p.long-dream { font-size: 20px; }
   .arrival-tail { font-size: 8px; }
-  .has-dreams .wall-intro { padding-top: 35px; }
-  .has-dreams .wall-intro h1 { font-size: clamp(32px, 8.4vw, 52px); }
+  .has-dreams .wall-intro { padding-top: 24px; }
   .has-dreams .wall-tagline { font-size: 12px; }
   .has-dreams .planet-system { top: 150px; }
   .wall-footer { align-items: center; gap: 10px; font-size: 9px; }
@@ -309,6 +315,18 @@ input::placeholder { color: #9cafce; }
   .reset-dialog h2 { font-size: 22px; }
   .dialog-actions { gap: 8px; }
   .dialog-actions .button { font-size: 11px; padding-inline: 12px; white-space: normal; }
+}
+@media (max-height: 600px) {
+  .wall-shell { padding: 12px 3vw; }
+  .wall-shell .wall-intro { padding-top: 12px; }
+  .wall-shell .wall-intro h1 { font-size: 24px; }
+  .wall-shell .wall-tagline { font-size: 11px; margin-top: 4px; }
+  .wall-shell .workshop-name { font-size: 10px; margin-top: 4px; }
+  .wall-feedback { width: 64px; }
+  .wall-shell .dream-space { padding-block: 12px; }
+  .dream-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+  .dream-grid .dream-card { padding: 12px; }
+  .wall-footer { min-height: 36px; padding-top: 8px; }
 }
 @media (max-width: 380px) {
   .wall-shell { padding-inline: 16px; }

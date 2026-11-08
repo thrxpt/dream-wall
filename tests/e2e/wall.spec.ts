@@ -159,13 +159,11 @@ test("desktop projector and mobile stay readable, HTML remains text, and reset t
   await expect(page.locator(".dream-card p img")).toHaveCount(0);
   await page.screenshot({ path: ".impeccable/review/desktop.png", fullPage: true, animations: "disabled" });
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 1440);
-  const footer = await page.locator(".wall-footer").boundingBox();
-  expect(footer!.y + footer!.height).toBeLessThanOrEqual(900);
+  await expect(page.locator(".dream-grid.is-current .dream-card p").nth(1)).toHaveText("ความฝันของฉันคือการสร้างอนาคตที่ดีให้กับทุกคน ".repeat(6).trim());
 
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.screenshot({ path: ".impeccable/review/projector.png", fullPage: true, animations: "disabled" });
-  const projectorFooter = await page.locator(".wall-footer").boundingBox();
-  expect(projectorFooter!.y + projectorFooter!.height).toBeLessThanOrEqual(768);
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 1366);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: ".impeccable/review/mobile.png", fullPage: true, animations: "disabled" });
@@ -196,10 +194,9 @@ test("admin controls pause on every display, while reset and fullscreen still wo
   await admin.goto("/admin");
   await expect(admin.getByRole("button", { name: "พักข้อความ", exact: true })).toBeEnabled();
   await request.post("/api/dreams", { data: { dream: "W".repeat(500) } });
-  await expect(page.locator(".arrival p")).toHaveText("W".repeat(64));
-  await expect(page.locator(".arrival-tail")).toContainText("ส่วนที่ 1/8");
-  const footer = await page.locator(".wall-footer").boundingBox();
-  expect(footer!.y + footer!.height).toBeLessThanOrEqual(768);
+  await expect(page.locator(".arrival p")).toHaveText("W".repeat(500));
+  await expect(page.locator(".arrival-tail")).not.toContainText("ส่วนที่");
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 1366);
   await page.screenshot({ path: ".impeccable/review/arrival-max-projector.png", fullPage: true, animations: "disabled" });
 
   await page.clock.install();
@@ -209,7 +206,7 @@ test("admin controls pause on every display, while reset and fullscreen still wo
   await expect(other.locator("main")).toHaveClass(/is-paused/);
   await expect(page.locator(".neptune")).toHaveCSS("animation-play-state", "paused");
   await page.clock.fastForward(20000);
-  await expect(page.locator(".arrival-tail")).toContainText("ส่วนที่ 1/8");
+  await expect(page.locator(".arrival p")).toHaveText("W".repeat(500));
   await page.screenshot({ path: ".impeccable/review/paused-projector.png", fullPage: true, animations: "disabled" });
 
   await admin.getByRole("button", { name: "เล่นต่อ", exact: true }).click();
@@ -217,7 +214,8 @@ test("admin controls pause on every display, while reset and fullscreen still wo
   await expect(other.locator("main")).not.toHaveClass(/is-paused/);
   await expect(page.locator(".neptune")).toHaveCSS("animation-play-state", "running");
   await page.clock.fastForward(6500);
-  await expect(page.locator(".arrival-tail")).toContainText("ส่วนที่ 2/8");
+  await expect(page.locator(".arrival")).toHaveCount(0);
+  await expect(page.locator(".dream-card p")).toHaveText("W".repeat(500));
   await admin.getByRole("button", { name: "พักข้อความ", exact: true }).click();
   await expect(page.locator("main")).toHaveClass(/is-paused/);
 

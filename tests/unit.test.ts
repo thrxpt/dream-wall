@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseDream, parseRound, readJson } from "../lib/api";
-import { dreamParts, type Dream, type WallSnapshot } from "../lib/contracts";
+import type { Dream, WallSnapshot } from "../lib/contracts";
 import { advanceShow, emptyShow, reconcileShow } from "../lib/show";
 
 const dream = (id: string): Dream => ({ id, dream: `ความฝัน ${id}`, createdAt: "2026-11-06T00:00:00Z", hidden: false });
@@ -10,9 +10,24 @@ const snap = (round: number, dreams: Dream[], generation = round): WallSnapshot 
 test("dream validation preserves Thai, multiline content and 500 Unicode code points", () => {
   assert.equal(parseDream({ dream: "  อยากสร้างเกม\nให้ทุกคนสนุก  " }), "อยากสร้างเกม\nให้ทุกคนสนุก");
   assert.equal(parseDream({ dream: "🚀".repeat(500) }), "🚀".repeat(500));
-  for (const value of [undefined, null, 3, [], "   ", "a".repeat(501), "a\u0000b", "\ud800"]) {
+  for (const value of [undefined, null, 3, [], "   ", "a\u0000b", "\ud800", "a".repeat(500) + "\u0000", "a".repeat(500) + "\ud800"]) {
     assert.throws(() => parseDream({ dream: value }), { status: 400 });
   }
+});
+
+test("dreams over 500 code points are truncated with three dots inside the storage limit", () => {
+  for (const character of ["a", "ก", "🚀"]) {
+    for (const length of [499, 500]) {
+      assert.equal(parseDream({ dream: character.repeat(length) }), character.repeat(length));
+    }
+    for (const length of [501, 1000]) {
+      const result = parseDream({ dream: character.repeat(length) });
+      assert.equal(result, character.repeat(497) + "...");
+      assert.equal([...result].length, 500);
+      assert.ok(result.isWellFormed());
+    }
+  }
+  assert.equal(parseDream({ dream: "  " + "e\u0301".repeat(501) + "  " }), "é".repeat(497) + "...");
 });
 
 test("invalid rounds cannot bypass stale-round protection", () => {
@@ -70,15 +85,12 @@ test("reusing round 1 clears the old arrival, queue and seen IDs", () => {
   assert.equal(show.active?.id, "new");
 });
 
-test("featured text advances through bounded parts before moving to the next dream", () => {
+test("a long arrival stays intact and advances once to the next dream", () => {
   let show = reconcileShow(reconcileShow(emptyShow, snap(1, [])), snap(1, [{ ...dream("wide"), dream: "W".repeat(500) }, dream("next")]));
-  for (let part = 0; part < 8; part++) {
-    assert.equal(show.active?.id, "wide");
-    assert.equal(show.part, part);
-    show = advanceShow(show);
-  }
+  assert.equal(show.active?.dream, "W".repeat(500));
+  show = advanceShow(show);
   assert.equal(show.active?.id, "next");
-  assert.equal(show.part, 0);
+  assert.equal(advanceShow(show).active, null);
 });
 
 test("pause queues incoming arrivals but still reconciles moderation and reset", () => {
@@ -92,13 +104,4 @@ test("pause queues incoming arrivals but still reconciles moderation and reset",
   show = reconcileShow(show, snap(2, []), true);
   assert.equal(show.active, null);
   assert.equal(show.queue.length, 0);
-});
-
-test("long projector text is split without losing graphemes or any content", () => {
-  const text = "ความฝันของฉันคือการสร้างอนาคตที่ดี🚀".repeat(12);
-  const parts = dreamParts(text);
-  assert.equal(parts.join(""), text);
-  const segmenter = new Intl.Segmenter("th", { granularity: "grapheme" });
-  assert.ok(parts.every(part => [...segmenter.segment(part)].length <= 64));
-  assert.equal(dreamParts("hello\n\nworld").join(""), "hello world");
 });
