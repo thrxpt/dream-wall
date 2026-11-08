@@ -79,10 +79,10 @@ svg { flex-shrink: 0; }
 .orbit-loader { width: 36px; height: 36px; border: 1px solid #557bb8; border-radius: 50%; display: block; position: relative; margin-bottom: 20px; animation: orbit-spin 3s linear infinite; }
 .orbit-loader > span { width: 7px; height: 7px; position: absolute; left: 24px; background: var(--cyan); border-radius: 50%; }
 .dream-pages { display: grid; grid-template-rows: minmax(0, 1fr); flex: 1; min-height: 0; }
-.dream-grid { display: grid; grid-area: 1 / 1; min-height: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 16px; visibility: hidden; }
+.dream-grid { display: grid; grid-area: 1 / 1; min-height: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 16px; visibility: hidden; }
 .dream-grid.is-current { visibility: visible; animation: dream-fade 500ms ease-in-out both; }
 .is-paused .dream-grid { animation: none; }
-.dream-card { background: #0c162cf5; border: 1px solid #31476a; border-radius: 14px; padding: 20px 22px 17px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+.dream-card { background: #0c162cf5; border: 1px solid #31476a; border-radius: 14px; padding: 20px 22px 17px; min-height: 0; max-height: 100%; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
 .dream-card > :not(p), .arrival > :not(p) { flex-shrink: 0; }
 .arrival { animation: dream-fade 500ms ease-out both; }
 .dream-star { margin-bottom: 12px; }
@@ -90,12 +90,12 @@ svg { flex-shrink: 0; }
 .dream-card p.long-dream { font-size: clamp(17px, 1.35vw, 23px); }
 .dream-signature { font-size: 8px; letter-spacing: .1em; color: #adbfdf; display: flex; justify-content: space-between; align-items: center; margin-top: auto; gap: 12px; }
 .dream-signature > span { font-size: 10px; font-variant-numeric: tabular-nums; }
-.arrival { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; margin: 0; padding: 24px 30px; background: #132d51; border: 1px solid #6192c9; border-radius: 16px; }
+.arrival { display: flex; flex-direction: column; flex: 0 1 auto; width: 100%; min-height: 0; overflow: hidden; margin: 0; padding: 24px 30px; background: #132d51; border: 1px solid #6192c9; border-radius: 16px; }
 .arrival-label { display: flex; align-items: center; gap: 9px; color: #b6e6ff; font-size: 13px; }
 .arrival p { font-family: "Noto Sans Thai", var(--font); font-size: clamp(25px, 2.7vw, 44px); line-height: 1.65; font-weight: 500; text-align: center; margin: 17px auto; max-width: 1000px; overflow-wrap: anywhere; white-space: pre-wrap; }
 .arrival p.long-dream { font-size: clamp(21px, 1.9vw, 31px); }
-.dream-card p, .arrival p { flex: 1 1 0; min-height: 0; overflow: hidden; }
-.dream-card p > span, .arrival p > span { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--dream-lines, 1); }
+.dream-card p, .arrival p { flex: 0 1 auto; min-height: 0; overflow: hidden; }
+.dream-card p > span, .arrival p > span { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--dream-lines, unset); }
 .arrival p { width: 100%; }
 .arrival-tail { display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 10px; color: #b6d1f0; }
 .has-dreams .wall-intro { padding-top: 30px; }

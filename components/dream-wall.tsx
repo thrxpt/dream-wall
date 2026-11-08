@@ -184,11 +184,16 @@ function DreamText({ text }: { text: string }) {
     const element = paragraph.current;
     if (!element) return;
     const fit = () => {
+      // Measure the natural text again so a previous clamp cannot keep a
+      // content-sized panel small after its available space grows.
+      element.style.removeProperty("--dream-lines");
       const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight);
-      element.style.setProperty("--dream-lines", String(Math.max(1, Math.floor(element.clientHeight / lineHeight))));
+      const lines = Math.max(1, Math.floor((element.clientHeight + 0.5) / lineHeight));
+      element.style.setProperty("--dream-lines", String(lines));
     };
     const observer = new ResizeObserver(fit);
-    observer.observe(element);
+    const availableSpace = element.closest(".dream-grid, .dream-space");
+    if (availableSpace) observer.observe(availableSpace);
     document.fonts.addEventListener("loadingdone", fit);
     fit();
     return () => {
