@@ -237,13 +237,13 @@ test("public outage copy stays participant-facing and recovers without a reload"
   await page.route("**/api/dreams", route => route.fulfill({
     status: 503,
     contentType: "application/json",
-    body: JSON.stringify({ error: "ตั้งค่า DATABASE_URL แล้วรัน npm run db:setup" }),
+    body: JSON.stringify({ error: "ตั้งค่า DATABASE_URL แล้วรัน bun run db:setup" }),
   }));
   await page.goto("/");
   await expect(page.getByText("ยังเชื่อมต่อกำแพงไม่ได้")).toBeVisible();
   await expect(page.locator(".connection-banner")).toContainText("กำลังเชื่อมต่อกำแพงความฝันอีกครั้ง");
   await expect(page.locator("body")).not.toContainText("DATABASE_URL");
-  await expect(page.locator("body")).not.toContainText("npm run");
+  await expect(page.locator("body")).not.toContainText("bun run");
   await page.screenshot({ path: ".impeccable/review/outage-desktop.png", fullPage: true, animations: "disabled" });
   await page.unroute("**/api/dreams");
   await expect(page.getByText("จักรวาลนี้กำลังรอความฝันแรก")).toBeVisible();

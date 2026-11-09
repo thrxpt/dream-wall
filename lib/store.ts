@@ -17,7 +17,7 @@ export class DreamStore {
         FROM dreams d WHERE ${includeHidden} OR NOT d.hidden), '[]'::json) AS dreams
       FROM wall_state s WHERE s.id = 1
     `;
-    if (!state) throw new HttpError(503, "ยังไม่ได้เตรียมฐานข้อมูล กรุณารัน npm run db:setup");
+    if (!state) throw new HttpError(503, "ยังไม่ได้เตรียมฐานข้อมูล กรุณารัน bun run db:setup");
     return state as WallSnapshot;
   }
 
@@ -89,7 +89,7 @@ export class DreamStore {
 let store: DreamStore | undefined;
 export function getStore() {
   if (!process.env.DATABASE_URL) {
-    throw new HttpError(503, "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาตั้งค่า DATABASE_URL และรัน npm run db:setup");
+    throw new HttpError(503, "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาตั้งค่า DATABASE_URL และรัน bun run db:setup");
   }
   store ??= new DreamStore(postgres(process.env.DATABASE_URL, {
     max: 3,

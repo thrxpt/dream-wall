@@ -11,7 +11,7 @@ export default defineConfig({
   timeout: 30000,
   use: { baseURL: "http://localhost:3100", headless: true },
   webServer: {
-    command: "npm run start -- --port 3100",
+    command: "bun run start --port 3100",
     url: "http://localhost:3100/api/dreams",
     env: { DATABASE_URL: databaseUrl },
     reuseExistingServer: false,

@@ -16,14 +16,14 @@ The `/admin` page requires a password. All data and control endpoints under `/ap
 
 ## Run locally
 
-Requires Node.js 22.13 or later and Docker.
+Requires Bun 1.4.4 or later, Node.js 22.13 or later, and Docker.
 
 ```sh
-npm ci
+bun install --frozen-lockfile
 cp .env.example .env.local
 docker compose up -d --wait
-npm run db:setup
-npm run dev
+bun run db:setup
+bun run dev
 ```
 
 Open `http://localhost:3000` and `http://localhost:3000/admin`. The local database is stored in a Docker volume and persists across restarts. You can rerun `db:setup` without deleting existing data.
@@ -33,7 +33,7 @@ Open `http://localhost:3000` and `http://localhost:3000/admin`. The local databa
 1. Import this repository into Vercel, select the **Next.js** framework, keep the default build and output settings, and use Node.js 22.x or later.
 2. Under **Storage / Marketplace**, add a **Neon Postgres** database for this project or use an existing PostgreSQL database. Choose a region close to Vercel Functions.
 3. Set the **`DATABASE_URL`** environment variable to the database's pooled connection string, for example `postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require`. If the integration provides a different variable name, add `DATABASE_URL` referencing that connection value.
-4. **Prepare the tables once before use:** set the production `DATABASE_URL` in a secure shell or in an uncommitted `.env.local`, then run `npm run db:setup` with that connection string. This does not delete existing dreams. Restore `.env.local` to the local database afterward if you plan to continue development.
+4. **Prepare the tables once before use:** set the production `DATABASE_URL` in a secure shell or in an uncommitted `.env.local`, then run `bun run db:setup` with that connection string. This does not delete existing dreams. Restore `.env.local` to the local database afterward if you plan to continue development.
 5. Deploy or redeploy after setting the environment variables. Open `/` and `/admin` to confirm the database connection works.
 6. Disable **Vercel Deployment Protection / Vercel Authentication** for the deployment used in the workshop so participants can submit through the API without signing in to Vercel.
 
@@ -78,7 +78,7 @@ For `POST /api/dreams`, errors are returned as `{"error":"..."}`: `400` for inva
 | PATCH | `/api/admin/feedback` | `{"visible":false,"round":1,"generation":1}` to hide the feedback QR code on every screen; use `true` to show it |
 | POST | `/api/admin/reset` | `{"confirm":"RESET","round":1,"generation":1,"nextRound":1}` to clear all dreams and start the selected round; omit `nextRound` to increment the round number |
 
-The `round` and `generation` values in admin requests must come from the current snapshot. `generation` changes on every reset, even when the same round number is reused, so stale requests cannot clear or modify data in a new round. Round numbers must be positive integers no greater than 2147483647. When upgrading from an earlier version, run `npm run db:setup` against the database in use before deploying to add the `generation`, `paused`, `polling_enabled`, and `feedback_visible` columns while preserving existing data. Refresh the admin page after deployment.
+The `round` and `generation` values in admin requests must come from the current snapshot. `generation` changes on every reset, even when the same round number is reused, so stale requests cannot clear or modify data in a new round. Round numbers must be positive integers no greater than 2147483647. When upgrading from an earlier version, run `bun run db:setup` against the database in use before deploying to add the `generation`, `paused`, `polling_enabled`, and `feedback_visible` columns while preserving existing data. Refresh the admin page after deployment.
 
 Create an admin session with `POST /api/admin/session` and JSON `{"password":"your configured password"}`. Protected admin endpoints return `401` without a session cookie. Log out with `DELETE /api/admin/session` and JSON `{}`. The browser handles the cookie automatically after login.
 
@@ -87,8 +87,8 @@ Every edit locks the round state in a PostgreSQL transaction. A repeated reset o
 ## Tests
 
 ```sh
-npm test
-npm run build
+bun run test
+bun run build
 ```
 
 API and browser tests use a separate local database. Its name must end in `_test`, and its host must be `localhost` or `127.0.0.1` to protect production data.
@@ -104,9 +104,9 @@ TEST_DATABASE_URL=postgresql://dreamwall:dreamwall@localhost:54329/dreamwall_tes
 ```
 
 ```sh
-npm run test:integration
-npx playwright install chromium
-npm run test:e2e
+bun run test:integration
+bunx playwright install chromium
+bun run test:e2e
 ```
 
 The API tests prepare the test database tables and cover 40 simultaneous participants, hide/show behavior, input validation, repeated resets, and submissions racing with a reset. Browser tests open two displays and verify that old queued dreams do not reappear after a reset. They also cover the mobile layout, HTML injection, and keyboard focus in the confirmation dialog.

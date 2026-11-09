@@ -14,7 +14,7 @@ export async function handleApi(action: () => Promise<Response>) {
     const code = (error as { code?: string }).code;
     console.error("Dream Wall request failed", code ?? "unexpected error");
     return json({ error: code === "42P01"
-      ? "ยังไม่ได้เตรียมฐานข้อมูล กรุณารัน npm run db:setup"
+      ? "ยังไม่ได้เตรียมฐานข้อมูล กรุณารัน bun run db:setup"
       : "เชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง" }, 503);
   }
 }
