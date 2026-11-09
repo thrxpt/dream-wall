@@ -10,6 +10,8 @@ const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith("_test") || !["localhost", "127.0.0.1"].includes(new URL(databaseUrl).hostname)) {
   throw new Error("TEST_DATABASE_URL must point to a local database whose name ends in _test. Tests erase this database's wall data.");
 }
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminPassword) throw new Error("Set ADMIN_PASSWORD in .env.test for integration tests.");
 const sql = postgres(databaseUrl, { max: 1, prepare: false, onnotice: () => {} });
 const base = "http://localhost:3099";
 let server: ChildProcess;
@@ -36,7 +38,7 @@ before(async () => {
   for (let i = 0; i < 100; i++) {
     try {
       if ((await fetch(`${base}/api/dreams`)).ok) {
-        const login = await request("/api/admin/session", { password: "cpediwa" });
+        const login = await request("/api/admin/session", { password: adminPassword });
         assert.equal(login.status, 200);
         adminCookie = login.headers.get("set-cookie")!.split(";")[0];
         return;
@@ -254,7 +256,7 @@ test("admin page and all management APIs require a session while CLI submission 
   const html = await page.text();
   assert.ok(html.includes("เข้าสู่หน้า Admin"));
   assert.ok(!html.includes("ดูแลจักรวาลความฝัน"));
-  assert.ok(!html.includes("cpediwa"));
+  assert.ok(!html.includes(adminPassword));
   const submission = await fetch(`${base}/api/dreams`, { method: "POST", headers: { "Content-Type": "application/json" }, body: '{"dream":"ไม่ต้องล็อกอินตอนส่งความฝัน"}' });
   assert.equal(submission.status, 201);
   const { id } = await submission.json();
@@ -272,32 +274,32 @@ test("admin page and all management APIs require a session while CLI submission 
 });
 
 test("incorrect passwords, forged cookies and expired sessions cannot grant admin access", async () => {
-  for (const password of ["wrong", "", null, " cpediwa", 123]) {
+  for (const password of [`${adminPassword}wrong`, "", null, ` ${adminPassword}`, 123]) {
     const response = await fetch(`${base}/api/admin/session`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) });
     assert.equal(response.status, 401);
     assert.equal(response.headers.get("set-cookie"), null);
   }
   const payload = `${Date.now() - 1000}.${randomUUID()}`;
-  const expired = `${payload}.${createHmac("sha256", "cpediwa").update(`dream-wall-admin:${payload}`).digest("hex")}`;
+  const expired = `${payload}.${createHmac("sha256", adminPassword).update(`dream-wall-admin:${payload}`).digest("hex")}`;
   const last = adminCookie.at(-1) === "0" ? "1" : "0";
-  for (const cookie of ["dream-wall-admin=cpediwa", adminCookie.slice(0, -1) + last, `dream-wall-admin=${expired}`]) {
+  for (const cookie of ["dream-wall-admin=not-a-signed-token", adminCookie.slice(0, -1) + last, `dream-wall-admin=${expired}`]) {
     assert.equal((await fetch(`${base}/api/admin/dreams`, { headers: { Cookie: cookie } })).status, 401);
     assert.ok((await (await fetch(`${base}/admin`, { headers: { Cookie: cookie } })).text()).includes("เข้าสู่หน้า Admin"));
   }
 });
 
 test("login issues a protected cookie and logout expires it", async () => {
-  const login = await request("/api/admin/session", { password: "cpediwa" });
+  const login = await request("/api/admin/session", { password: adminPassword });
   assert.equal(login.status, 200);
   const cookie = login.headers.get("set-cookie")!;
   assert.match(cookie, /HttpOnly/i);
   assert.match(cookie, /Secure/i);
   assert.match(cookie, /SameSite=strict/i);
   assert.match(cookie, /Max-Age=43200/i);
-  assert.ok(!cookie.includes("cpediwa"));
+  assert.ok(!cookie.includes(adminPassword));
   const logout = await request("/api/admin/session", {}, "DELETE");
   assert.equal(logout.status, 200);
   assert.match(logout.headers.get("set-cookie")!, /Max-Age=0/i);
-  const crossOrigin = await fetch(`${base}/api/admin/session`, { method: "POST", headers: { "Content-Type": "application/json", origin: "https://foreign.test" }, body: '{"password":"cpediwa"}' });
+  const crossOrigin = await fetch(`${base}/api/admin/session`, { method: "POST", headers: { "Content-Type": "application/json", origin: "https://foreign.test" }, body: JSON.stringify({ password: adminPassword }) });
   assert.equal(crossOrigin.status, 403);
 });
