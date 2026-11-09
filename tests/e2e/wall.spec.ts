@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminPassword) throw new Error("Set ADMIN_PASSWORD in .env.test for E2E tests.");
+
 test.beforeEach(async ({ request, context }) => {
-  expect((await request.post("/api/admin/session", { data: { password: "cpediwa" } })).ok()).toBe(true);
-  expect((await context.request.post("/api/admin/session", { data: { password: "cpediwa" } })).ok()).toBe(true);
+  expect((await request.post("/api/admin/session", { data: { password: adminPassword } })).ok()).toBe(true);
+  expect((await context.request.post("/api/admin/session", { data: { password: adminPassword } })).ok()).toBe(true);
   const state = await (await request.get("/api/admin/dreams")).json();
   expect((await request.patch("/api/admin/polling", { data: { round: state.round, generation: state.generation, enabled: true } })).ok()).toBe(true);
   await request.post("/api/admin/reset", { data: { round: state.round, generation: state.generation, confirm: "RESET" } });
@@ -299,7 +302,7 @@ test("password gate rejects mistakes, remembers login after reload, and logout l
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: ".impeccable/review/admin-login-mobile.png", fullPage: true, animations: "disabled" });
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 390);
-  await page.getByLabel("รหัสผ่าน", { exact: true }).fill("cpediwa");
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(adminPassword);
   await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
   await expect(page.getByRole("heading", { name: "ดูแลจักรวาลความฝัน" })).toBeVisible();
   await page.reload();

@@ -12,7 +12,7 @@ A Neptune-themed dream wall for the final mission of a CLI workshop. It supports
 - The public display has no admin controls or admin links. Page dots appear when multiple pages are available and let viewers select a page. Press `F` to enter or exit full-screen mode.
 - The feedback QR visibility control in `/admin` controls the QR code on every screen. It is visible by default, and its setting persists after reloads and resets. Displays receive changes automatically every 2 seconds only while automatic updates are enabled. If polling is stopped, refresh the display or return to its tab to receive the latest setting. The QR code is captioned “Feedback” and is not a clickable link.
 
-The `/admin` page requires a password. All data and control endpoints under `/api/admin` require a session cookie; the login and logout endpoints are the exceptions. Admin controls are labeled in Thai; this README describes them in English. The server-side password is set in `lib/admin-session.ts`, as requested by the project owner; it is never sent to the page's JavaScript. After login, a signed HttpOnly cookie keeps the session for 12 hours. A logout button is available. The projector and `POST /api/dreams` remain available without login.
+The `/admin` page requires the server environment variable `ADMIN_PASSWORD`. There is no default password, and admin login stays disabled when the variable is empty or unset. Keep it private and out of source control. All data and control endpoints under `/api/admin` require a session cookie; the login and logout endpoints are the exceptions. Admin controls are labeled in Thai; this README describes them in English. The password is never sent to the page's JavaScript. After login, a signed HttpOnly cookie keeps the session for 12 hours. Changing `ADMIN_PASSWORD` invalidates existing sessions. A logout button is available. The projector and `POST /api/dreams` remain available without login.
 
 ## Run locally
 
@@ -26,13 +26,13 @@ bun run db:setup
 bun run dev
 ```
 
-Open `http://localhost:3000` and `http://localhost:3000/admin`. The local database is stored in a Docker volume and persists across restarts. You can rerun `db:setup` without deleting existing data.
+Before `bun run dev`, set a private `ADMIN_PASSWORD` in `.env.local`. Open `http://localhost:3000` and `http://localhost:3000/admin`. The local database is stored in a Docker volume and persists across restarts. You can rerun `db:setup` without deleting existing data.
 
 ## Deploy to Vercel
 
 1. Import this repository into Vercel, select the **Next.js** framework, keep the default build and output settings, and use Node.js 22.x or later.
 2. Under **Storage / Marketplace**, add a **Neon Postgres** database for this project or use an existing PostgreSQL database. Choose a region close to Vercel Functions.
-3. Set the **`DATABASE_URL`** environment variable to the database's pooled connection string, for example `postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require`. If the integration provides a different variable name, add `DATABASE_URL` referencing that connection value.
+3. Set **`DATABASE_URL`** to the database's pooled connection string, for example `postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require`. If the integration provides a different variable name, add `DATABASE_URL` referencing that connection value. Set **`ADMIN_PASSWORD`** to a private password in Vercel's environment settings.
 4. **Prepare the tables once before use:** set the production `DATABASE_URL` in a secure shell or in an uncommitted `.env.local`, then run `bun run db:setup` with that connection string. This does not delete existing dreams. Restore `.env.local` to the local database afterward if you plan to continue development.
 5. Deploy or redeploy after setting the environment variables. Open `/` and `/admin` to confirm the database connection works.
 6. Disable **Vercel Deployment Protection / Vercel Authentication** for the deployment used in the workshop so participants can submit through the API without signing in to Vercel.
@@ -97,10 +97,11 @@ API and browser tests use a separate local database. Its name must end in `_test
 docker compose exec -T db createdb -U dreamwall dreamwall_test
 ```
 
-Create an uncommitted `.env.test` file with:
+Create an uncommitted `.env.test` file with a local test database and a test-only admin password:
 
 ```dotenv
 TEST_DATABASE_URL=postgresql://dreamwall:dreamwall@localhost:54329/dreamwall_test
+ADMIN_PASSWORD=replace-with-a-test-only-password
 ```
 
 ```sh
