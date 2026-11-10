@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import icon from "./icon.webp";
 import "@fontsource-variable/manrope";
 import "@fontsource/noto-sans-thai/400.css";
 import "@fontsource/noto-sans-thai/500.css";
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   title: "Dream Wall · Beyond the Star. Dream Begin.",
   description: "กำแพงความฝันจาก Terminal of Despina · workshop CLI ของ Operation Neptune ภาควิชาวิศวกรรมคอมพิวเตอร์",
   robots: { index: false, follow: false },
+  icons: { icon: icon.src },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
